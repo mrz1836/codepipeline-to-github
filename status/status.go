@@ -39,8 +39,8 @@ type detail struct {
 	Pipeline    string `json:"pipeline"`
 }
 
-// GithubPayload is the data payload to send Github
-type GithubPayload struct {
+// payload is the data payload to send Github
+type payload struct {
 	Context     string `json:"context"`
 	Description string `json:"description"`
 	State       string `json:"state"`
@@ -90,7 +90,7 @@ func ProcessEvent(ev event) error {
 
 	// Create the Github payload
 	var b bytes.Buffer
-	if err = json.NewEncoder(&b).Encode(GithubPayload{
+	if err = json.NewEncoder(&b).Encode(payload{
 		Context:   "continuous-integration/codepipeline",
 		State:     githubStatus,
 		TargetURL: deepLink,
@@ -110,9 +110,8 @@ func ProcessEvent(ev event) error {
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 	// Fire the request
-	client := &http.Client{}
 	var response *http.Response
-	if response, err = client.Do(req); err != nil {
+	if response, err = http.DefaultClient.Do(req); err != nil {
 		return err
 	}
 	defer func() {
@@ -126,11 +125,6 @@ func ProcessEvent(ev event) error {
 	}
 
 	return nil
-}
-
-// Start the lambda event handler
-func main() {
-	lambda.Start(ProcessEvent)
 }
 
 // getCommit will get the Github commit and revision url from an execution
@@ -191,4 +185,9 @@ func getCommit(pipelineName, executionID string) (commit, status string, revisio
 	}
 
 	return
+}
+
+// Start the lambda event handler
+func main() {
+	lambda.Start(ProcessEvent)
 }
