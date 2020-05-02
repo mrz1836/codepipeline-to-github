@@ -2,10 +2,13 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 12
+      python: 3.8
     commands:
-      - go get ./...
-      - yum -y install awscli aws-sam-cli
+      - go get -u golang.org/x/lint/golint
+      - cd status && go get ./...
+      - pip install --upgrade pip
+      - pip install pipenv --user
+      - pipenv install awscli aws-sam-cli
   build:
     commands:
       - echo "Starting build & deloy..."
