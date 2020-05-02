@@ -140,13 +140,13 @@ Resources:
                 Repo: !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 PollForSourceChanges: false
-                OAuthToken: !Ref GitHubToken
+                OAuthToken: "{{resolve:ssm:/github/personal_access_token:1}}"
         - Name: Build
           Actions:
             - Name: Build-and-Deploy-Stack
               RunOrder: 3
               InputArtifacts:
-                - Name: BuiltAndTested
+                - Name: SourceCode
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -181,7 +181,6 @@ Resources:
 
   GithubWebhook:
     Type: 'AWS::CodePipeline::Webhook'
-    Condition: ModifyGithub
     DependsOn:
       - CodePipeline
     Properties:
