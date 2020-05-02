@@ -50,6 +50,8 @@ type GithubPayload struct {
 // ProcessEvent is triggered by a CloudWatch event rule
 func ProcessEvent(ev event) error {
 
+	fmt.Println("test deployment 1")
+
 	// Check for required parameters
 	if ev.Detail != nil {
 		fmt.Printf("Incoming Event Details: %+v\n", ev.Detail)
