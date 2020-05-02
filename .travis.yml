@@ -27,8 +27,8 @@ before_script:
 # Run all scripts
 script:
  - golint
- - go vet
- - go test -race -coverprofile=coverage.txt -covermode=atomic
+ - go vet ./...
+ - go test ./... -race -coverprofile=coverage.txt -covermode=atomic
 
 # After build success
 after_success:

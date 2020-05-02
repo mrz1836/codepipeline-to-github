@@ -5,7 +5,6 @@ phases:
       python: 3.8
     commands:
       - go get -u golang.org/x/lint/golint
-      #- cd status && go get ./...
       - go get ./...
       - pip install --upgrade pip
       - pip install pipenv --user
@@ -16,7 +15,5 @@ phases:
       - |
         if [ ${CODEBUILD_BUILD_NUMBER} -gt "1" ] ; then
           echo "Build #${CODEBUILD_BUILD_NUMBER}"
-          ls -al
-          make test
           make deploy
         fi

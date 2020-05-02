@@ -1,12 +1,12 @@
 # CodePipeline -> GitHub (via Lambda)
 > Update a GitHub pull request status via CodePipeline events
 
-[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/lambda-codepipeline-github)](https://golang.org/)
-[![Build Status](https://travis-ci.com/mrz1836/lambda-codepipeline-github.svg?branch=master)](https://travis-ci.com/mrz1836/lambda-codepipeline-github)
-[![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
-[![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)
-[![Release](https://img.shields.io/github/release-pre/mrz1836/lambda-codepipeline-github.svg?style=flat)](https://github.com/mrz1836/lambda-codepipeline-github/releases)
-[![GoDoc](https://godoc.org/github.com/mrz1836/lambda-codepipeline-github?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=doc)
+[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/lambda-codepipeline-github?v=1)](https://golang.org/)
+[![Build Status](https://travis-ci.com/mrz1836/lambda-codepipeline-github.svg?branch=master&v=1)](https://travis-ci.com/mrz1836/lambda-codepipeline-github)
+[![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat&v=1)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
+[![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg?v=1)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)
+[![Release](https://img.shields.io/github/release-pre/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)](https://github.com/mrz1836/lambda-codepipeline-github/releases)
+[![GoDoc](https://godoc.org/github.com/mrz1836/lambda-codepipeline-github?status.svg&style=flat&v=1)](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=doc)
 
 ## Table of Contents
 - [Installation](#installation)
@@ -155,4 +155,4 @@ This application would not be possible without the work provided in these reposi
 
 ## License
 
-![License](https://img.shields.io/github/license/mrz1836/lambda-codepipeline-github.svg?style=flat)
+![License](https://img.shields.io/github/license/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)
