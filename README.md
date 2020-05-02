@@ -1,4 +1,4 @@
-# CodePipeline -> GitHub (via Lambda)
+# CodePipeline -> GitHub (via `Lambda`)
 > Update a GitHub pull request status via CodePipeline events
 
 [![Go](https://img.shields.io/badge/Go-1.14.xx-blue.svg)](https://golang.org/)
@@ -12,7 +12,6 @@
 - [Installation](#installation)
 - [Documentation](#documentation)
 - [Examples & Tests](#examples--tests)
-- [Benchmarks](#benchmarks)
 - [Code Standards](#code-standards)
 - [Maintainers](#maintainers)
 - [Contributing](#contributing)
@@ -155,12 +154,6 @@ All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/lambda-codepipe
 Run all tests (including integration tests)
 ```shell script
 make test
-```
-
-## Benchmarks
-Run the Go [benchmarks](status/status_test.go):
-```shell script
-make bench
 ```
 
 ## Code Standards
