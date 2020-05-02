@@ -1,0 +1,16 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+      commands:
+        # Install yarn and aws cli and sam
+        - yum -y install awscli aws-sam-cli
+  build:
+    commands:
+      - echo "Starting build & deloy..."
+      - |
+        if [ ${CODEBUILD_BUILD_NUMBER} -gt "1" ] ; then
+          echo "Build #${CODEBUILD_BUILD_NUMBER}"
+          make deploy
+        fi

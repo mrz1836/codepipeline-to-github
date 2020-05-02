@@ -24,6 +24,38 @@ Parameters:
     Default: 'production'
     ConstraintDescription: 'must be a valid stage name (IE: dev, staging, production)'
 
+  ApplicationBucket:
+    Type: String
+    Description: 'Pre-existing S3 bucket that will store the application files for deployment'
+    MinLength: 5
+    Default: 'cloudformation-distribution-raw-files'
+    AllowedPattern: "[A-Za-z0-9-_]+"
+    ConstraintDescription: 'must be a valid s3 bucket location'
+
+  GitHubOwner:
+    Type: String
+    Description: 'the repository owner or username'
+    Default: "mrz1836"
+    MinLength: 2
+    AllowedPattern: "[A-Za-z0-9-]+"
+    ConstraintDescription: 'must be a valid repository username'
+
+  GitHubRepo:
+    Type: String
+    Description: 'the repository name'
+    Default: "lambda-codepipeline-github"
+    MinLength: 1
+    AllowedPattern: "[A-Za-z0-9-_]+"
+    ConstraintDescription: 'must be a valid repository name'
+
+  GitHubBranch:
+    Type: String
+    Description: 'the repository branch that will trigger automatic deployments'
+    Default: "master"
+    MinLength: 1
+    AllowedPattern: "[A-Za-z0-9-_]+"
+    ConstraintDescription: 'must be a valid branch name'
+
 # More info about MetaData: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-publishing-applications-metadata-properties.html
 Metadata:
   AWS::ServerlessRepo::Application:
@@ -79,8 +111,127 @@ Resources:
       LogGroupName: !Sub '/aws/lambda/${StatusFunction}'
       RetentionInDays: 90
 
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn:
+      - CodeBuildProject
+    Properties:
+      Name: !Sub "${ApplicationName}-${ApplicationStageName}-deployment"
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ApplicationBucket
+      RestartExecutionOnUpdate: false
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source-From-Github
+              InputArtifacts: []
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceCode
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepo
+                Branch: !Ref GitHubBranch
+                PollForSourceChanges: false
+                OAuthToken: !Ref GitHubToken
+        - Name: Build
+          Actions:
+            - Name: Build-and-Deploy-Stack
+              RunOrder: 3
+              InputArtifacts:
+                - Name: BuiltAndTested
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName:
+                  Ref: CodeBuildProject
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${ApplicationName}-${ApplicationStageName}-build-deploy"
+      ServiceRole: !Ref CodeBuildRole
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:3.0
+        EnvironmentVariables:
+          - Name: APPLICATION_STACK_NAME
+            Type: PLAINTEXT
+            Value: !Sub "${ApplicationName}-${ApplicationStageName}"
+          - Name: APPLICATION_STAGE
+            Type: PLAINTEXT
+            Value: !Ref ApplicationStageName
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: "buildspec.yml"
+      TimeoutInMinutes: 15
+
+  GithubWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Condition: ModifyGithub
+    DependsOn:
+      - CodePipeline
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: "{{resolve:ssm:/github/personal_access_token:1}}"
+      RegisterWithThirdParty: 'true'
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Ref CodePipeline
+      TargetAction: Source-From-Github
+      TargetPipelineVersion: !GetAtt CodePipeline.Version
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - codebuild.amazonaws.com
+              - cloudformation.amazonaws.com
+              - s3.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess #TODO: Reduce permissions
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - codepipeline.amazonaws.com
+              - s3.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess #TODO: Reduce permissions
+
 # More info about Outputs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html
 Outputs:
   StatusFunction:
     Description: 'Affected Function: Status (ARN)'
     Value: !GetAtt StatusFunction.Arn
+  AutomaticDeployment:
+    Description: 'CI/CD Integration'
+    Value: !Sub 'pushing to ${GitHubOwner}/${GitHubRepo}:${GitHubBranch} will deploy to: ${ApplicationStageName}'
