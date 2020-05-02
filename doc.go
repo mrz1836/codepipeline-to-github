@@ -1,1 +1,1 @@
-package docs
+package doc

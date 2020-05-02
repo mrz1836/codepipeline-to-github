@@ -124,6 +124,10 @@ run-status: ## Fires the lambda function (IE: run-status event=started)
 	fi
 	sam local invoke StatusFunction --force-image-build -e status/events/$(event)-event.json --template $(TEMPLATE_RAW)
 
+save-token: ## Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
+	test $(token)
+	aws ssm put-parameter --name /github/personal_access_token --value $(token) --type String
+
 tag: ## Generate a new tag and push (IE: tag version=0.0.0)
 	test $(version)
 	git tag -a v$(version) -m "Pending full release..."

@@ -17,29 +17,23 @@
 - [Contributing](#contributing)
 - [License](#license)
 
+## Prerequisites
+* [An AWS account](https://aws.amazon.com/)
+* [Golang](https://golang.org/doc/install)
+* [Docker](https://docs.docker.com/install)
+* [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+* [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
+
 ## Installation
-This project uses [sam-cli](https://github.com/awslabs/serverless-application-model) for locally working with Lambda functions.
-
-**1)** Install [sam & docker](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
+**1)** Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
-brew tap aws/tap
-brew install awscli
-brew install aws-sam-cli
+go get github.com/mrz1818/lambda-codeship-github/...
+cd $GOPATH/src/github.com/mrz1818/lambda-codeship-github
 ```
 
-**2)** Add the Github token to [SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
-```shell script
-aws ssm put-parameter --name /github/personal_access_token --value YOUR_TOKEN --type String
-```
-
-**3)** Test your local installation (runs the `status` function)
+**2)** Test your local installation (executes the `status` function)
 ```shell script
 make run-status
-``` 
-
-**4)** Deploy to AWS!
-```shell script
-make deploy
 ```   
 
 ### Deployment & Hosting
@@ -63,9 +57,14 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 - (1) [CodeBuild Project(s)](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
 - (2) [Service Roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) for working with CodeBuild and CodePipeline
 
-**NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [makefile](Makefile))
+**NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-One command will build, test, package and deploy the application to AWS. 
+**1)** Add your Github token to [SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+```shell script
+make save-token token=YOUR_TOKEN
+```
+
+**2)** One command will build, test, package and deploy the application to AWS. 
 After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
@@ -135,7 +134,8 @@ package                        Process the CF template and prepare for deploymen
 release                        Full production release (creates release in Github)
 release-test                   Full production test release (everything except deploy)
 release-snap                   Test the full release (build binaries)
-run-status                     Fires the lambda function
+run-status                     Fires the lambda function (IE: run-status event=started)
+save-token                     Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
 tag                            Generate a new tag and push (IE: tag version=0.0.0)
 tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
 tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
