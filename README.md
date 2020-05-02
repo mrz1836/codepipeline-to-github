@@ -1,4 +1,4 @@
-# CodePipeline -> GitHub (via `Lambda`)
+# CodePipeline -> Lambda -> Github
 > Update a GitHub pull request status via CodePipeline events
 
 [![Go](https://img.shields.io/badge/Go-1.14.xx-blue.svg)](https://golang.org/)
