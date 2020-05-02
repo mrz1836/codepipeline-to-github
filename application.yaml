@@ -1,0 +1,86 @@
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy.html
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Update a GitHub pull request status via CodePipeline events
+
+# More info about Parameters: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
+Parameters:
+
+  ApplicationName:
+    Description: 'used to create the name of the application in cloud formation'
+    Type: String
+    Default: 'lambda-codepipeline-github'
+    AllowedPattern: '[a-zA-Z0-9-_]*'
+    MinLength: 3
+    MaxLength: 64
+    ConstraintDescription: 'must be a valid application name'
+
+  ApplicationStageName:
+    Description: 'used for the de-coupling based on environment (IE: production)'
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-_]*'
+    MinLength: 1
+    MaxLength: 16
+    Default: 'production'
+    ConstraintDescription: 'must be a valid stage name (IE: dev, staging, production)'
+
+# More info about MetaData: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-publishing-applications-metadata-properties.html
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: !Sub '${ApplicationName}-${ApplicationStageName}'
+    Description: 'Update a GitHub pull request status via CodePipeline events'
+    Author: MrZ
+    #ReadmeUrl: README.md
+    Labels: ['lambda','github','codepipeline']
+    HomePageUrl: !Sub "https://github.com/mrz1836/lambda-codepipeline-github"
+    SemanticVersion: "0.0.1"
+    SourceCodeUrl: !Sub "https://github.com/mrz1836/lambda-codepipeline-github"
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    MemorySize: 256
+    Timeout: 5
+    Runtime: go1.x
+    CodeUri: 'functions'
+    Environment:
+      Variables:
+        GITHUB_ACCESS_TOKEN: "{{resolve:ssm:/github/personal_access_token:1}}"
+
+# More info about Resources: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-resources-and-properties.html
+Resources:
+  StatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${ApplicationName}-${ApplicationStageName}'
+      CodeUri: status/.
+      Handler: status
+      Policies:
+        - AWSCodePipelineReadOnlyAccess
+        - AWSLambdaBasicExecutionRole
+      Events:
+        Event:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source:
+                - aws.codepipeline
+              detail-type:
+                - "CodePipeline Pipeline Execution State Change"
+              detail:
+                state:
+                  - "STARTED"
+                  - "SUCCEEDED"
+                  - "FAILED"
+
+  StatusFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${StatusFunction}'
+      RetentionInDays: 90
+
+# More info about Outputs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html
+Outputs:
+  StatusFunction:
+    Description: 'Affected Function: Status (ARN)'
+    Value: !GetAtt StatusFunction.Arn
