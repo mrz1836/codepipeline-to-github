@@ -17,21 +17,23 @@
 - [Contributing](#contributing)
 - [License](#license)
 
-## Prerequisites
-* [An AWS account](https://aws.amazon.com/)
-* [Golang](https://golang.org/doc/install)
-* [Docker](https://docs.docker.com/install)
-* [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
-* [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
-
 ## Installation
+
+#### Prerequisites
+- [An AWS account](https://aws.amazon.com/)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+- [Golang](https://golang.org/doc/install)
+- [Docker](https://docs.docker.com/install)
+- [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
+
+
 **1)** Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
 go get github.com/mrz1818/lambda-codeship-github/...
 cd $GOPATH/src/github.com/mrz1818/lambda-codeship-github
 ```
 
-**2)** Test your local installation (executes the `status` function)
+**2)** Test your local installation (executes the [`status`](status/status.go) function)
 ```shell script
 make run-status
 ```   
