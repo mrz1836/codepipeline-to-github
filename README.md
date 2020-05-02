@@ -1,7 +1,7 @@
 # CodePipeline -> GitHub (via Lambda)
 > Update a GitHub pull request status via CodePipeline events
 
-[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/lambda-codepipeline-github?v=1)](https://golang.org/)
+[![Go](https://img.shields.io/badge/Go-1.14.xx-blue.svg)](https://golang.org/)
 [![Build Status](https://travis-ci.com/mrz1836/lambda-codepipeline-github.svg?branch=master&v=1)](https://travis-ci.com/mrz1836/lambda-codepipeline-github)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat&v=1)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
 [![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg?v=1)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)

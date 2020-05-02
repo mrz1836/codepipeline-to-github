@@ -41,6 +41,11 @@ ifndef STATUS_BINARY
 override STATUS_BINARY=status
 endif
 
+## Package directory name
+ifndef PACKAGE_NAME
+override PACKAGE_NAME=status
+endif
+
 ## Automatically detect the repo owner and repo name
 REPO_NAME=$(shell basename `git rev-parse --show-toplevel`)
 REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
@@ -51,10 +56,17 @@ VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
 
 .PHONY: test lint clean release lambda
 
+MYDIR = .
+list: $(MYDIR)/*
+	for file in $^ ; do \
+		echo "Hello" $${file} ; \
+	done
+
+
 all: lint test vet ## Run multiple pre-configured commands at once
 
 bench:  ## Run all benchmarks in the Go application
-	go test -bench ./... -benchmem -v
+	cd $(PACKAGE_NAME) && go test -bench ./... -benchmem -v
 
 build: ## Build the lambda function as a compiled application
 	go build -o $(STATUS_BINARY) ./status/status.go
@@ -67,7 +79,7 @@ clean-mods: ## Remove all the Go mod cache
 	go clean -modcache
 
 coverage: ## Shows the test coverage
-	go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
+	cd $(PACKAGE_NAME) && go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 
 deploy: ## Build, prepare and deploy
 	$(MAKE) package
@@ -91,7 +103,7 @@ lambda: ## Build a compiled version to deploy to Lambda
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
 lint: ## Run the Go lint application
-	golint
+	cd $(PACKAGE_NAME) && golint
 
 package: ## Process the CF template and prepare for deployment
 	$(MAKE) lambda
@@ -142,19 +154,19 @@ teardown: ## Deletes the entire stack
 test: ## Runs vet, lint and ALL tests
 	$(MAKE) vet
 	$(MAKE) lint
-	go test ./... -v
+	cd $(PACKAGE_NAME) && go test ./... -v
 
 test-short: ## Runs vet, lint and tests (excludes integration tests)
 	$(MAKE) vet
 	$(MAKE) lint
-	go test ./... -v -test.short
+	cd $(PACKAGE_NAME) && go test ./... -v -test.short
 
 update:  ## Update all project dependencies
-	cd status && go get -u ./... && go mod tidy
+	cd $(PACKAGE_NAME) && go get -u ./... && go mod tidy
 
 update-releaser:  ## Update the goreleaser application
 	brew update
 	brew upgrade goreleaser
 
 vet: ## Run the Go vet application
-	go vet -v ./...
+	cd $(PACKAGE_NAME) && go vet -v ./...
