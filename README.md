@@ -22,10 +22,10 @@
 This project uses [sam-cli](https://github.com/awslabs/serverless-application-model) for locally working with Lambda functions.
 
 **1)** Install [sam & docker](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
-```bash
-$ brew tap aws/tap
-$ brew install awscli
-$ brew install aws-sam-cli
+```shell script
+brew tap aws/tap
+brew install awscli
+brew install aws-sam-cli
 ```
 
 **2)** Add the Github token to [SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
@@ -33,9 +33,14 @@ $ brew install aws-sam-cli
 aws ssm put-parameter --name /github/personal_access_token --value YOUR_TOKEN --type String
 ```
 
-**3)** Invoke the `status` function locally
+**3)** Test your local installation (runs the `status` function)
 ```shell script
 make run-status
+``` 
+
+**4)** Deploy to AWS!
+```shell script
+make deploy
 ```   
 
 ### Deployment & Hosting
@@ -52,15 +57,17 @@ The actual build process can be found in the [buildspec.yml](buildspec.yml) file
 
 This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack with:
 - (1) [Lambda](https://aws.amazon.com/lambda/) Function(s)
+- (1) [CloudWatch Event Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/Create-CloudWatch-Events-Rule.html) to subscribe to Pipeline events
 - (1) [CloudWatch LogGroups](https://aws.amazon.com/cloudwatch/) for Lambda Function(s)
 - (1) [CodePipeline](https://aws.amazon.com/codepipeline/) with multiple stages to deploy the application from Github
-- (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive Github notifications from a specific `branch`
+- (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive Github notifications from a specific `branch:name`
 - (1) [CodeBuild Project(s)](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
 - (2) [Service Roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) for working with CodeBuild and CodePipeline
 
-**NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [makefile](Makefile).
+**NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [makefile](Makefile))
 
-**1)** One command will build, test, package and deploy the application to AWS
+One command will build, test, package and deploy the application to AWS. 
+After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
 ``` 
@@ -88,6 +95,11 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 
 ## Documentation
 You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=doc).
+
+Run the status function with different [events](status/events)
+```shell script
+make run-status event=failed
+``` 
 
 <details>
 <summary><strong><code>Library Deployment</code></strong></summary>
@@ -146,7 +158,7 @@ make test
 ```
 
 ## Benchmarks
-Run the Go [benchmarks](sanitize_test.go):
+Run the Go [benchmarks](status/status_test.go):
 ```shell script
 make bench
 ```
