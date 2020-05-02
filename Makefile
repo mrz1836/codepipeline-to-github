@@ -56,14 +56,7 @@ VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
 
 .PHONY: test lint clean release lambda
 
-MYDIR = .
-list: $(MYDIR)/*
-	for file in $^ ; do \
-		echo "Hello" $${file} ; \
-	done
-
-
-all: lint test vet ## Run multiple pre-configured commands at once
+all: test ## Run multiple pre-configured commands at once
 
 bench:  ## Run all benchmarks in the Go application
 	cd $(PACKAGE_NAME) && go test -bench ./... -benchmem -v

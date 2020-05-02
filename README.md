@@ -39,12 +39,34 @@ make run-status
 ```   
 
 ### Deployment & Hosting
-Deploy the function(s) via `make` locally.
+This repository has CI integration using [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
 
-Manually deploy the function(s)
+Deploying to the `master` branch will automatically sync the code to [AWS Lambda](https://aws.amazon.com/lambda/).
+
+Any changes to the environment via the [AWS CloudFormation template](application.yaml) will be applied.
+
+The actual build process can be found in the [buildspec.yml](buildspec.yml) file.
+
+<details>
+<summary><strong><code>Create New Hosting Environment (AWS)</code></strong></summary>
+
+This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack with:
+- (1) [Lambda](https://aws.amazon.com/lambda/) Function(s)
+- (1) [CloudWatch LogGroups](https://aws.amazon.com/cloudwatch/) for Lambda Function(s)
+- (1) [CodePipeline](https://aws.amazon.com/codepipeline/) with multiple stages to deploy the application from Github
+- (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive Github notifications from a specific `branch`
+- (1) [CodeBuild Project(s)](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
+- (2) [Service Roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) for working with CodeBuild and CodePipeline
+
+**NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [makefile](Makefile).
+
+**1)** One command will build, test, package and deploy the application to AWS
 ```shell script
 make deploy
-```
+``` 
+
+If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
+</details>
 
 <details>
 <summary><strong><code>Tear Down Hosting Environment (AWS)</code></strong></summary>
