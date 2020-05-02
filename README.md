@@ -6,7 +6,6 @@
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat&v=1)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
 [![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg?v=1)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)
 [![Release](https://img.shields.io/github/release-pre/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)](https://github.com/mrz1836/lambda-codepipeline-github/releases)
-[![GoDoc](https://godoc.org/github.com/mrz1836/lambda-codepipeline-github?status.svg&style=flat&v=1)](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=doc)
 
 ## Table of Contents
 - [Installation](#installation)
@@ -94,7 +93,7 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 </details>
 
 ## Documentation
-You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=doc).
+You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=subdirectories).
 
 Run the status function with different [events](status/events)
 ```shell script
