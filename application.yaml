@@ -9,7 +9,7 @@ Parameters:
   ApplicationName:
     Description: 'used to create the name of the application in cloud formation'
     Type: String
-    Default: 'lambda-codepipeline-github'
+    Default: 'codepipeline-to-github'
     AllowedPattern: '[a-zA-Z0-9-_]*'
     MinLength: 3
     MaxLength: 64
@@ -43,7 +43,7 @@ Parameters:
   GitHubRepo:
     Type: String
     Description: 'the repository name'
-    Default: "lambda-codepipeline-github"
+    Default: "codepipeline-to-github"
     MinLength: 1
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid repository name'
@@ -64,9 +64,9 @@ Metadata:
     Author: MrZ
     #ReadmeUrl: README.md
     Labels: ['lambda','github','codepipeline']
-    HomePageUrl: !Sub "https://github.com/mrz1836/lambda-codepipeline-github"
+    HomePageUrl: !Sub 'https://github.com/${GitHubOwner}/${GitHubRepo}'
     SemanticVersion: "0.0.1"
-    SourceCodeUrl: !Sub "https://github.com/mrz1836/lambda-codepipeline-github"
+    SourceCodeUrl: !Sub 'https://github.com/${GitHubOwner}/${GitHubRepo}'
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:

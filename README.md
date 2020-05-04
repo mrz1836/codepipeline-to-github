@@ -1,11 +1,11 @@
-# CodePipeline -> Lambda -> Github
+# CodePipeline → Lambda → Github
 > Update a GitHub pull request status via CodePipeline events
 
 [![Go](https://img.shields.io/badge/Go-1.14.xx-blue.svg)](https://golang.org/)
-[![Build Status](https://travis-ci.com/mrz1836/lambda-codepipeline-github.svg?branch=master&v=1)](https://travis-ci.com/mrz1836/lambda-codepipeline-github)
-[![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat&v=1)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
-[![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg?v=1)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)
-[![Release](https://img.shields.io/github/release-pre/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)](https://github.com/mrz1836/lambda-codepipeline-github/releases)
+[![Build Status](https://travis-ci.com/mrz1836/codepipeline-to-github.svg?branch=master&v=1)](https://travis-ci.com/mrz1836/codepipeline-to-github)
+[![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=1)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
+[![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=1)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
+[![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?style=flat&v=1)](https://github.com/mrz1836/codepipeline-to-github/releases)
 
 ## Table of Contents
 - [Installation](#installation)
@@ -32,9 +32,9 @@ go get github.com/mrz1818/lambda-codeship-github/...
 cd $GOPATH/src/github.com/mrz1818/lambda-codeship-github
 ```
 
-**2)** Test your local installation (executes the [`status`](status/status.go) function)
+**2)** Test your local installation (executes the [`status`](status.go) function)
 ```shell script
-make run-status
+make run
 ```   
 
 ### Deployment & Hosting
@@ -93,11 +93,11 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 </details>
 
 ## Documentation
-You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=subdirectories).
+You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/codepipeline-to-github?tab=subdirectories).
 
 Run the status function with different [events](events)
 ```shell script
-make run-status event=failed
+make run event=failed
 ``` 
 
 <details>
@@ -135,7 +135,7 @@ package                        Process the CF template and prepare for deploymen
 release                        Full production release (creates release in Github)
 release-test                   Full production test release (everything except deploy)
 release-snap                   Test the full release (build binaries)
-run-status                     Fires the lambda function (IE: run-status event=started)
+run                            Fires the lambda function (IE: run event=started)
 save-token                     Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
 tag                            Generate a new tag and push (IE: tag version=0.0.0)
 tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
@@ -150,7 +150,7 @@ vet                            Run the Go vet application
 </details>
 
 ## Examples & Tests
-All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/lambda-codepipeline-github) and uses [Go version 1.14.x](https://golang.org/doc/go1.14). View the [deployment configuration file](.travis.yml).
+All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/codepipeline-to-github) and uses [Go version 1.14.x](https://golang.org/doc/go1.14). View the [deployment configuration file](.travis.yml).
 
 Run all tests (including integration tests)
 ```shell script
@@ -172,7 +172,7 @@ View the [contributing guidelines](CONTRIBUTING.md) and follow the [code of cond
 
 Support the development of this project 🙏
 
-[![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=lambda-codepipeline-github)
+[![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=codepipeline-to-github)
 
 ### Credits
 This application would not be possible without the work provided in these repositories: 
@@ -183,4 +183,4 @@ This application would not be possible without the work provided in these reposi
 
 ## License
 
-![License](https://img.shields.io/github/license/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)
+![License](https://img.shields.io/github/license/mrz1836/codepipeline-to-github.svg?style=flat&v=1)

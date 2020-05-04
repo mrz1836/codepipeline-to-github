@@ -71,7 +71,7 @@ bench:  ## Run all benchmarks in the Go application
 	@go test -bench ./... -benchmem -v
 
 build: ## Build the lambda function as a compiled application
-	@go build -o ../releases/$(STATUS_BINARY)/$(STATUS_BINARY) .
+	@go build -o releases/$(STATUS_BINARY)/$(STATUS_BINARY) .
 
 clean: ## Remove previous builds and any test cache data
 	@go clean -cache -testcache -i -r
@@ -127,7 +127,7 @@ release-test: ## Full production test release (everything except deploy)
 release-snap: ## Test the full release (build binaries)
 	@goreleaser --snapshot --skip-publish --rm-dist
 
-run-status: ## Fires the lambda function (IE: run-status event=started)
+run: ## Fires the lambda function (IE: run event=started)
 	@$(MAKE) lambda
 	if [ "$(event)" == "" ]; then \
   		@echo $(eval event += started); \
@@ -156,6 +156,7 @@ tag-update: ## Update an existing tag to current commit (IE: tag-update version=
 	@git fetch --tags -f
 
 teardown: ## Deletes the entire stack
+	@test $(STACK_NAME)
 	@aws cloudformation delete-stack --stack-name $(STACK_NAME)
 
 test: ## Runs vet, lint and ALL tests
