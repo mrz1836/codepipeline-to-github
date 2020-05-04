@@ -13,16 +13,6 @@ ifndef AWS_REGION
 override AWS_REGION=us-east-1
 endif
 
-## Cloud formation stack name
-ifndef STACK_NAME
-override STACK_NAME=lambda-codepipeline-github
-endif
-
-## S3 prefix to store the distribution files
-ifndef S3_PREFIX
-override S3_PREFIX=$(STACK_NAME)
-endif
-
 ## Raw cloud formation template for the application
 ifndef TEMPLATE_RAW
 override TEMPLATE_RAW=application.yaml
@@ -50,6 +40,16 @@ GIT_DOMAIN=github.com
 REPO_NAME=$(shell basename `git rev-parse --show-toplevel`)
 REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
 
+## Cloud formation stack name
+ifndef STACK_NAME
+override STACK_NAME=$(REPO_NAME)
+endif
+
+## S3 prefix to store the distribution files
+ifndef S3_PREFIX
+override S3_PREFIX=$(STACK_NAME)
+endif
+
 ## Set the version (for go docs)
 VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
 
@@ -66,7 +66,7 @@ bench:  ## Run all benchmarks in the Go application
 	@cd $(PACKAGE_NAME) && go test -bench ./... -benchmem -v
 
 build: ## Build the lambda function as a compiled application
-	@go build -o $(STATUS_BINARY) ./status/status.go
+	@cd $(PACKAGE_NAME) && go build -o ../releases/$(STATUS_BINARY)/$(STATUS_BINARY) status.go
 
 clean: ## Remove previous builds and any test cache data
 	@go clean -cache -testcache -i -r
