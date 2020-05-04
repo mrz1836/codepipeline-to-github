@@ -1,7 +1,7 @@
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-template-anatomy.html
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Update a GitHub pull request status via CodePipeline events
+Description: Update a GitHub commit status via CodePipeline events
 
 # More info about Parameters: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
 Parameters:
@@ -60,7 +60,7 @@ Parameters:
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: !Sub '${ApplicationName}-${ApplicationStageName}'
-    Description: 'Update a GitHub pull request status via CodePipeline events'
+    Description: 'Update a GitHub commit status via CodePipeline events'
     Author: MrZ
     #ReadmeUrl: README.md
     Labels: ['lambda','github','codepipeline']

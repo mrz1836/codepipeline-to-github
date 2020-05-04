@@ -1,5 +1,5 @@
 # CodePipeline → Lambda → Github
-> Update a GitHub pull request status via CodePipeline events
+> Update a GitHub commit status via CodePipeline events
 
 [![Go](https://img.shields.io/badge/Go-1.14.xx-blue.svg)](https://golang.org/)
 [![Build Status](https://travis-ci.com/mrz1836/codepipeline-to-github.svg?branch=master&v=1)](https://travis-ci.com/mrz1836/codepipeline-to-github)
@@ -28,7 +28,7 @@
 
 **1)** Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
-go get github.com/mrz1818/lambda-codeship-github/...
+go get github.com/mrz1818/lambda-codeship-github
 cd $GOPATH/src/github.com/mrz1818/lambda-codeship-github
 ```
 
@@ -120,7 +120,7 @@ make help
 
 List of all current commands:
 ```text
-all                            Run multiple pre-configured commands at once
+all                            Run lint, test and vet
 bench                          Run all benchmarks in the Go application
 build                          Build the lambda function as a compiled application
 clean                          Remove previous builds and any test cache data
