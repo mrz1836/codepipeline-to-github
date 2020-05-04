@@ -1,50 +1,78 @@
-# CodePipeline -> GitHub (via Lambda)
+# CodePipeline -> Lambda -> Github
 > Update a GitHub pull request status via CodePipeline events
 
-[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/lambda-codepipeline-github)](https://golang.org/)
-[![Build Status](https://travis-ci.com/mrz1836/lambda-codepipeline-github.svg?branch=master)](https://travis-ci.com/mrz1836/lambda-codepipeline-github)
-[![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
-[![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)
-[![Release](https://img.shields.io/github/release-pre/mrz1836/lambda-codepipeline-github.svg?style=flat)](https://github.com/mrz1836/lambda-codepipeline-github/releases)
-[![GoDoc](https://godoc.org/github.com/mrz1836/lambda-codepipeline-github?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=doc)
+[![Go](https://img.shields.io/badge/Go-1.14.xx-blue.svg)](https://golang.org/)
+[![Build Status](https://travis-ci.com/mrz1836/lambda-codepipeline-github.svg?branch=master&v=1)](https://travis-ci.com/mrz1836/lambda-codepipeline-github)
+[![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat&v=1)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
+[![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg?v=1)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)
+[![Release](https://img.shields.io/github/release-pre/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)](https://github.com/mrz1836/lambda-codepipeline-github/releases)
 
 ## Table of Contents
 - [Installation](#installation)
 - [Documentation](#documentation)
 - [Examples & Tests](#examples--tests)
-- [Benchmarks](#benchmarks)
 - [Code Standards](#code-standards)
 - [Maintainers](#maintainers)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Installation
-This project uses [sam-cli](https://github.com/awslabs/serverless-application-model) for locally working with Lambda functions.
 
-**1)** Install [sam & docker](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
-```bash
-$ brew tap aws/tap
-$ brew install awscli
-$ brew install aws-sam-cli
-```
+#### Prerequisites
+- [An AWS account](https://aws.amazon.com/)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+- [Golang](https://golang.org/doc/install)
+- [Docker](https://docs.docker.com/install)
+- [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
 
-**2)** Add the Github token to [SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+
+**1)** Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
-aws ssm put-parameter --name /github/personal_access_token --value YOUR_TOKEN --type String
+go get github.com/mrz1818/lambda-codeship-github/...
+cd $GOPATH/src/github.com/mrz1818/lambda-codeship-github
 ```
 
-**3)** Invoke the `status` function locally
+**2)** Test your local installation (executes the [`status`](status/status.go) function)
 ```shell script
 make run-status
 ```   
 
 ### Deployment & Hosting
-Deploy the function(s) via `make` locally.
+This repository has CI integration using [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
 
-Manually deploy the function(s)
+Deploying to the `master` branch will automatically sync the code to [AWS Lambda](https://aws.amazon.com/lambda/).
+
+Any changes to the environment via the [AWS CloudFormation template](application.yaml) will be applied.
+
+The actual build process can be found in the [buildspec.yml](buildspec.yml) file.
+
+<details>
+<summary><strong><code>Create New Hosting Environment (AWS)</code></strong></summary>
+
+This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack with:
+- (1) [Lambda](https://aws.amazon.com/lambda/) Function(s)
+- (1) [CloudWatch Event Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/Create-CloudWatch-Events-Rule.html) to subscribe to Pipeline events
+- (1) [CloudWatch LogGroups](https://aws.amazon.com/cloudwatch/) for Lambda Function(s)
+- (1) [CodePipeline](https://aws.amazon.com/codepipeline/) with multiple stages to deploy the application from Github
+- (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive Github notifications from a specific `branch:name`
+- (1) [CodeBuild Project(s)](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
+- (2) [Service Roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) for working with CodeBuild and CodePipeline
+
+**NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
+
+**1)** Add your Github token to [SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+```shell script
+make save-token token=YOUR_TOKEN
+```
+
+**2)** One command will build, test, package and deploy the application to AWS. 
+After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
-```
+``` 
+
+If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
+</details>
 
 <details>
 <summary><strong><code>Tear Down Hosting Environment (AWS)</code></strong></summary>
@@ -65,7 +93,12 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 </details>
 
 ## Documentation
-You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=doc).
+You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=subdirectories).
+
+Run the status function with different [events](status/events)
+```shell script
+make run-status event=failed
+``` 
 
 <details>
 <summary><strong><code>Library Deployment</code></strong></summary>
@@ -102,7 +135,8 @@ package                        Process the CF template and prepare for deploymen
 release                        Full production release (creates release in Github)
 release-test                   Full production test release (everything except deploy)
 release-snap                   Test the full release (build binaries)
-run-status                     Fires the lambda function
+run-status                     Fires the lambda function (IE: run-status event=started)
+save-token                     Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
 tag                            Generate a new tag and push (IE: tag version=0.0.0)
 tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
 tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
@@ -121,12 +155,6 @@ All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/lambda-codepipe
 Run all tests (including integration tests)
 ```shell script
 make test
-```
-
-## Benchmarks
-Run the Go [benchmarks](sanitize_test.go):
-```shell script
-make bench
 ```
 
 ## Code Standards
@@ -155,4 +183,4 @@ This application would not be possible without the work provided in these reposi
 
 ## License
 
-![License](https://img.shields.io/github/license/mrz1836/lambda-codepipeline-github.svg?style=flat)
+![License](https://img.shields.io/github/license/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)

@@ -26,6 +26,7 @@ before_script:
 
 # Run all scripts
 script:
+ - cd status
  - golint
  - go vet
  - go test -race -coverprofile=coverage.txt -covermode=atomic

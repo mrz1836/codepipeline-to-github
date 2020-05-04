@@ -39,8 +39,8 @@ type detail struct {
 	Pipeline    string `json:"pipeline"`
 }
 
-// GithubPayload is the data payload to send Github
-type GithubPayload struct {
+// payload is the data payload to send Github
+type payload struct {
 	Context     string `json:"context"`
 	Description string `json:"description"`
 	State       string `json:"state"`
@@ -69,58 +69,12 @@ func ProcessEvent(ev event) error {
 		return errors.New("missing or invalid Github token")
 	}
 
-	// Create a new AWS session
-	awsSession := session.Must(session.NewSession())
-
-	// Start a new CodePipeline service
-	pipeline := codepipeline.New(awsSession)
-	res, err := pipeline.GetPipelineExecution(&codepipeline.GetPipelineExecutionInput{
-		PipelineExecutionId: aws.String(ev.Detail.ExecutionID),
-		PipelineName:        aws.String(ev.Detail.Pipeline),
-	})
+	// Get the commit info from the pipeline execution
+	commit, githubStatus, revisionURL, err := getCommit(ev.Detail.Pipeline, ev.Detail.ExecutionID)
 	if err != nil {
 		return err
-	} else if res == nil {
-		return fmt.Errorf("missing pipeline execution")
-	}
-
-	// Find the source artifacts
-	var sourceArtifact *codepipeline.ArtifactRevision
-	for _, artifact := range res.PipelineExecution.ArtifactRevisions {
-		if aws.StringValue(artifact.Name) == sourceArtifactName {
-			sourceArtifact = artifact
-			break
-		}
-	}
-
-	// No artifact to work with (this occurs if a "Release Change" event is fired)
-	if sourceArtifact == nil {
-		fmt.Printf("no %s found in execution: %s for pipeline: %s",
-			sourceArtifactName, *res.PipelineExecution.PipelineExecutionId, *res.PipelineExecution.PipelineName)
-		return nil
-	}
-
-	// Set the commit
-	commit := aws.StringValue(sourceArtifact.RevisionId)
-
-	// Parse the revision URL
-	var revisionURL *url.URL
-	if revisionURL, err = url.Parse(aws.StringValue(sourceArtifact.RevisionUrl)); err != nil {
-		return err
 	} else if revisionURL == nil {
-		return fmt.Errorf("missing %s: %s", sourceArtifactName, "RevisionUrl")
-	}
-
-	// Set the status based on the pipeline status
-	pipelineStatus := aws.StringValue(res.PipelineExecution.Status)
-	var githubStatus string
-	switch pipelineStatus {
-	case "InProgress":
-		githubStatus = "pending"
-	case "Succeeded":
-		githubStatus = "success"
-	default:
-		githubStatus = "failure"
+		return errors.New("unable to find the revision url, possibly missing source artifacts")
 	}
 
 	// Break apart the components
@@ -136,7 +90,7 @@ func ProcessEvent(ev event) error {
 
 	// Create the Github payload
 	var b bytes.Buffer
-	if err = json.NewEncoder(&b).Encode(GithubPayload{
+	if err = json.NewEncoder(&b).Encode(payload{
 		Context:   "continuous-integration/codepipeline",
 		State:     githubStatus,
 		TargetURL: deepLink,
@@ -156,9 +110,8 @@ func ProcessEvent(ev event) error {
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 	// Fire the request
-	client := &http.Client{}
 	var response *http.Response
-	if response, err = client.Do(req); err != nil {
+	if response, err = http.DefaultClient.Do(req); err != nil {
 		return err
 	}
 	defer func() {
@@ -172,6 +125,66 @@ func ProcessEvent(ev event) error {
 	}
 
 	return nil
+}
+
+// getCommit will get the Github commit and revision url from an execution
+func getCommit(pipelineName, executionID string) (commit, status string, revisionURL *url.URL, err error) {
+
+	// Create a new AWS session
+	awsSession := session.Must(session.NewSession())
+
+	// Start a new CodePipeline service
+	pipeline := codepipeline.New(awsSession)
+
+	// Get the execution details
+	var res *codepipeline.GetPipelineExecutionOutput
+	if res, err = pipeline.GetPipelineExecution(&codepipeline.GetPipelineExecutionInput{
+		PipelineExecutionId: aws.String(executionID),
+		PipelineName:        aws.String(pipelineName),
+	}); err != nil {
+		return
+	} else if res == nil {
+		err = fmt.Errorf("missing pipeline execution")
+		return
+	}
+
+	// Find the source artifacts
+	var sourceArtifact *codepipeline.ArtifactRevision
+	for _, artifact := range res.PipelineExecution.ArtifactRevisions {
+		if aws.StringValue(artifact.Name) == sourceArtifactName {
+			sourceArtifact = artifact
+			break
+		}
+	}
+
+	// No artifact to work with (this occurs if a "Release Change" event is fired)
+	if sourceArtifact == nil {
+		fmt.Printf("no %s found in execution: %s for pipeline: %s",
+			sourceArtifactName, *res.PipelineExecution.PipelineExecutionId, *res.PipelineExecution.PipelineName)
+		return
+	}
+
+	// Set the commit
+	commit = aws.StringValue(sourceArtifact.RevisionId)
+
+	// Parse the revision URL
+	if revisionURL, err = url.Parse(aws.StringValue(sourceArtifact.RevisionUrl)); err != nil {
+		return
+	} else if revisionURL == nil {
+		err = fmt.Errorf("missing %s: %s", sourceArtifactName, "RevisionUrl")
+	}
+
+	// Set the status based on the pipeline status
+	switch aws.StringValue(res.PipelineExecution.Status) {
+	case "InProgress":
+		status = "pending"
+	case "Succeeded":
+		status = "success"
+	default:
+		status = "failure"
+	}
+
+	return
 }
 
 // Start the lambda event handler
