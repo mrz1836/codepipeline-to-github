@@ -85,7 +85,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub '${ApplicationName}-${ApplicationStageName}'
-      CodeUri: status/.
+      CodeUri: releases/status/.
       Handler: status
       Policies:
         - AWSCodePipelineReadOnlyAccess
