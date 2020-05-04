@@ -221,6 +221,7 @@ Resources:
           Principal:
             Service:
               - codepipeline.amazonaws.com
+              - s3.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSCodePipelineFullAccess
