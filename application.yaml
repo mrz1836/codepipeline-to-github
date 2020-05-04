@@ -206,10 +206,10 @@ Resources:
             Service:
               - codebuild.amazonaws.com
               - cloudformation.amazonaws.com
-              - s3.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess #TODO: Reduce permissions
+        - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
+        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
 
   CodePipelineRole:
     Type: AWS::IAM::Role
@@ -221,10 +221,9 @@ Resources:
           Principal:
             Service:
               - codepipeline.amazonaws.com
-              - s3.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess #TODO: Reduce permissions
+        - arn:aws:iam::aws:policy/AWSCodePipelineFullAccess
 
 # More info about Outputs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html
 Outputs:
