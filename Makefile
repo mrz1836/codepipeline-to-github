@@ -58,26 +58,31 @@ ifndef DISTRIBUTIONS_DIR
 override DISTRIBUTIONS_DIR=./dist
 endif
 
+## Set the release folder
+ifndef RELEASES_DIR
+override RELEASES_DIR=./releases
+endif
+
 .PHONY: test lint clean release lambda
 
-all: test ## Run multiple pre-configured commands at once
+all: test ## Run lint, test and vet
 
 bench:  ## Run all benchmarks in the Go application
-	@cd $(PACKAGE_NAME) && go test -bench ./... -benchmem -v
+	@go test -bench ./... -benchmem -v
 
 build: ## Build the lambda function as a compiled application
-	@cd $(PACKAGE_NAME) && go build -o ../releases/$(STATUS_BINARY)/$(STATUS_BINARY) status.go
+	@go build -o ../releases/$(STATUS_BINARY)/$(STATUS_BINARY) .
 
 clean: ## Remove previous builds and any test cache data
 	@go clean -cache -testcache -i -r
-	@rm -f $(TEMPLATE_PACKAGED) status/$(STATUS_BINARY)
 	@if [ -d $(DISTRIBUTIONS_DIR) ]; then rm -r $(DISTRIBUTIONS_DIR); fi
+	@if [ -d $(RELEASES_DIR) ]; then rm -r $(RELEASES_DIR); fi
 
 clean-mods: ## Remove all the Go mod cache
 	@go clean -modcache
 
 coverage: ## Shows the test coverage
-	@cd $(PACKAGE_NAME) && go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
+	@go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 
 deploy: ## Build, prepare and deploy
 	@$(MAKE) package
@@ -101,7 +106,7 @@ lambda: ## Build a compiled version to deploy to Lambda
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
 lint: ## Run the Go lint application
-	@cd $(PACKAGE_NAME) && golint
+	@golint
 
 package: ## Process the CF template and prepare for deployment
 	@$(MAKE) lambda
@@ -127,7 +132,7 @@ run-status: ## Fires the lambda function (IE: run-status event=started)
 	if [ "$(event)" == "" ]; then \
   		@echo $(eval event += started); \
 	fi
-	@sam local invoke StatusFunction --force-image-build -e status/events/$(event)-event.json --template $(TEMPLATE_RAW)
+	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
 
 save-token: ## Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
 	@test $(token)
@@ -156,19 +161,19 @@ teardown: ## Deletes the entire stack
 test: ## Runs vet, lint and ALL tests
 	@$(MAKE) vet
 	@$(MAKE) lint
-	@cd $(PACKAGE_NAME) && go test ./... -v
+	@go test ./... -v
 
 test-short: ## Runs vet, lint and tests (excludes integration tests)
 	@$(MAKE) vet
 	@$(MAKE) lint
-	@cd $(PACKAGE_NAME) && go test ./... -v -test.short
+	@go test ./... -v -test.short
 
 update:  ## Update all project dependencies
-	@cd $(PACKAGE_NAME) && go get -u ./... && go mod tidy
+	@go get -u ./... && go mod tidy
 
 update-releaser:  ## Update the goreleaser application
 	@brew update
 	@brew upgrade goreleaser
 
 vet: ## Run the Go vet application
-	@cd $(PACKAGE_NAME) && go vet -v ./...
+	@go vet -v ./...

@@ -95,7 +95,7 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 ## Documentation
 You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=subdirectories).
 
-Run the status function with different [events](status/events)
+Run the status function with different [events](events)
 ```shell script
 make run-status event=failed
 ``` 

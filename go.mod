@@ -1,4 +1,4 @@
-module status
+module github.com/mrz1836/lambda-codepipeline-github
 
 go 1.14
 

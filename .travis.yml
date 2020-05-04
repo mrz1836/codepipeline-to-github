@@ -28,8 +28,8 @@ before_script:
 script:
  - cd status
  - golint
- - go vet
- - go test -race -coverprofile=coverage.txt -covermode=atomic
+ - go vet -v ./...
+ - go test ./... -race -coverprofile=coverage.txt -covermode=atomic
 
 # After build success
 after_success:

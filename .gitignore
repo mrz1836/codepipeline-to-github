@@ -29,9 +29,6 @@ packaged.yaml
 .aws-sam
 *.tar.gz
 
-# Functions
-status/status
-
 # Generated binaries
 dist
 releases
