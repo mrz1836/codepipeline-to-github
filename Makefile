@@ -63,7 +63,7 @@ ifndef RELEASES_DIR
 override RELEASES_DIR=./releases
 endif
 
-.PHONY: test lint clean release lambda
+.PHONY: test lint clean release lambda deploy
 
 all: test ## Run lint, test and vet
 
