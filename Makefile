@@ -8,6 +8,16 @@ ifndef S3_BUCKET
 override S3_BUCKET=cloudformation-distribution-raw-files
 endif
 
+## Cloud formation stack name
+ifndef STACK_NAME
+override STACK_NAME=codepipeline-to-github
+endif
+
+## S3 prefix to store the distribution files
+ifndef S3_PREFIX
+override S3_PREFIX=$(STACK_NAME)
+endif
+
 ## Default region for the application
 ifndef AWS_REGION
 override AWS_REGION=us-east-1
@@ -39,16 +49,6 @@ GIT_DOMAIN=github.com
 ## Automatically detect the repo owner and repo name
 REPO_NAME=$(shell basename `git rev-parse --show-toplevel`)
 REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
-
-## Cloud formation stack name
-ifndef STACK_NAME
-override STACK_NAME=$(REPO_NAME)
-endif
-
-## S3 prefix to store the distribution files
-ifndef S3_PREFIX
-override S3_PREFIX=$(STACK_NAME)
-endif
 
 ## Set the version (for go docs)
 VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
@@ -115,7 +115,8 @@ package: ## Process the CF template and prepare for deployment
         --template-file $(TEMPLATE_RAW)  \
         --output-template-file $(TEMPLATE_PACKAGED) \
         --s3-bucket $(S3_BUCKET) \
-        --s3-prefix $(S3_PREFIX)
+        --s3-prefix $(S3_PREFIX) \
+        --region $(AWS_REGION) \
 
 release: ## Full production release (creates release in Github)
 	@goreleaser --rm-dist
@@ -129,9 +130,7 @@ release-snap: ## Test the full release (build binaries)
 
 run: ## Fires the lambda function (IE: run event=started)
 	@$(MAKE) lambda
-	if [ "$(event)" == "" ]; then \
-  		echo $(eval event += started); \
-	fi
+	@if [ "$(event)" == "" ]; then echo $(eval event += started); fi
 	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
 
 save-token: ## Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
