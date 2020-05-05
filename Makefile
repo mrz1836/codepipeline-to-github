@@ -23,6 +23,11 @@ ifndef AWS_REGION
 override AWS_REGION=us-east-1
 endif
 
+## CloudFormation parameter overrides
+ifndef PARAMETER_OVERRIDE
+override PARAMETER_OVERRIDE="ApplicationStageName=production GitHubBranch=master"
+endif
+
 ## Raw cloud formation template for the application
 ifndef TEMPLATE_RAW
 override TEMPLATE_RAW=application.yaml
@@ -90,6 +95,7 @@ deploy: ## Build, prepare and deploy
         --template-file $(TEMPLATE_PACKAGED) \
         --stack-name $(STACK_NAME)  \
         --region $(AWS_REGION) \
+        --parameter-overrides "$(PARAMETER_OVERRIDE)" \
         --capabilities "CAPABILITY_IAM" \
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
