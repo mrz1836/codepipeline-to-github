@@ -206,10 +206,10 @@ Resources:
             Service:
               - codebuild.amazonaws.com
               - cloudformation.amazonaws.com
+              - s3.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
-        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+        - arn:aws:iam::aws:policy/AdministratorAccess
 
   CodePipelineRole:
     Type: AWS::IAM::Role
@@ -224,7 +224,7 @@ Resources:
               - s3.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AWSCodePipelineFullAccess
+        - arn:aws:iam::aws:policy/AdministratorAccess
 
 # More info about Outputs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html
 Outputs:
