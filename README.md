@@ -29,8 +29,8 @@
 
 **1)** Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
-go get github.com/mrz1818/lambda-codeship-github
-cd $GOPATH/src/github.com/mrz1818/lambda-codeship-github
+go get github.com/mrz1818/codepipeline-to-github
+cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 ```
 
 **2)** Test your local installation (executes the [`status`](status.go) function)
