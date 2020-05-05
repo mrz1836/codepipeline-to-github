@@ -106,6 +106,7 @@ lambda: ## Build a compiled version to deploy to Lambda
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
 lint: ## Run the Go lint application
+	@if [ "$(shell command -v golint)" == "" ]; then go get -u golang.org/x/lint/golint; fi
 	@golint
 
 package: ## Process the CF template and prepare for deployment
@@ -114,8 +115,7 @@ package: ## Process the CF template and prepare for deployment
         --template-file $(TEMPLATE_RAW)  \
         --output-template-file $(TEMPLATE_PACKAGED) \
         --s3-bucket $(S3_BUCKET) \
-        --s3-prefix $(S3_PREFIX) \
-        --region $(AWS_REGION)
+        --s3-prefix $(S3_PREFIX)
 
 release: ## Full production release (creates release in Github)
 	@goreleaser --rm-dist
@@ -130,7 +130,7 @@ release-snap: ## Test the full release (build binaries)
 run: ## Fires the lambda function (IE: run event=started)
 	@$(MAKE) lambda
 	if [ "$(event)" == "" ]; then \
-  		@echo $(eval event += started); \
+  		echo $(eval event += started); \
 	fi
 	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
 
