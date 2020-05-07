@@ -168,9 +168,15 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Type: PLAINTEXT
+            Value: !Sub "${AWS::Region}"
           - Name: APPLICATION_STACK_NAME
             Type: PLAINTEXT
             Value: !Sub "${ApplicationName}-${ApplicationStageName}"
+          - Name: APPLICATION_BUCKET_NAME
+            Type: PLAINTEXT
+            Value: !Ref ApplicationBucket
           - Name: APPLICATION_STAGE
             Type: PLAINTEXT
             Value: !Ref ApplicationStageName
