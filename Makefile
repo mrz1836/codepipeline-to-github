@@ -112,7 +112,7 @@ lambda: ## Build a compiled version to deploy to Lambda
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
 lint: ## Run the Go lint application
-	@if [ "$(shell command -v golint)" == "" ]; then go get -u golang.org/x/lint/golint; fi
+	@if [ "$(shell command -v golint)" = "" ]; then go get -u golang.org/x/lint/golint; fi
 	@golint
 
 package: ## Process the CF template and prepare for deployment

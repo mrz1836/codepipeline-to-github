@@ -50,6 +50,8 @@ The actual build process can be found in the [buildspec.yml](buildspec.yml) file
 <details>
 <summary><strong><code>Create New Hosting Environment (AWS)</code></strong></summary>
 
+<img src=".github/IMAGES/infrastructure-diagram.png" alt="infrastructure diagram" height="400" />
+
 This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack with:
 - (1) [Lambda](https://aws.amazon.com/lambda/) Function(s)
 - (1) [CloudWatch Event Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/Create-CloudWatch-Events-Rule.html) to subscribe to Pipeline events
