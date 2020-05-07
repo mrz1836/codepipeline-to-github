@@ -174,6 +174,11 @@ test-short: ## Runs vet, lint and tests (excludes integration tests)
 	@$(MAKE) lint
 	@go test ./... -v -test.short
 
+test-travis: ## Runs tests via Travis (also exports coverage)
+	@$(MAKE) vet
+	@$(MAKE) lint
+	@go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+
 update:  ## Update all project dependencies
 	@go get -u ./... && go mod tidy
 

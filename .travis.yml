@@ -20,15 +20,9 @@ git:
 notifications:
  email: false
 
-# Before we run scripts
-before_script:
- - go get -u golang.org/x/lint/golint
-
-# Run all scripts
+# Run all commands
 script:
- - golint
- - go vet -v ./...
- - go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+ - make travis
 
 # After build success
 after_success:
