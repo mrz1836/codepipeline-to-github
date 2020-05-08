@@ -111,6 +111,18 @@ clean-mods: ## Remove all the Go mod cache
 coverage: ## Shows the test coverage
 	@go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 
+create-secret: ## Creates an secret into AWS SecretsManager
+	# Example: create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
+	@test "$(name)"
+	@test "$(description)"
+	@test "$(secret_value)"
+	@test $(kms_key_id)
+	@aws secretsmanager create-secret \
+		--name "$(name)" \
+		--description "$(description)" \
+		--kms-key-id $(kms_key_id) \
+		--secret-string "$(secret_value)" \
+
 deploy: ## Build, prepare and deploy
 	@$(MAKE) package
 	@sam deploy \
@@ -188,26 +200,6 @@ save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
                   --key-id $(kms_key_id) \
                   --plaintext "$(param_value)") \
 
-create-secret: ## Creates an secret into AWS SecretsManager
-	# Example: create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
-	@test "$(name)"
-	@test "$(description)"
-	@test "$(secret_value)"
-	@test $(kms_key_id)
-	@aws secretsmanager create-secret \
-		--name "$(name)" \
-		--description "$(description)" \
-		--kms-key-id $(kms_key_id) \
-		--secret-string "$(secret_value)" \
-
-update-secret: ## Updates an existing secret in AWS SecretsManager
-	# Example: update-secret name='production/test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}'
-	@test "$(name)"
-	@test "$(secret_value)"
-	aws secretsmanager update-secret \
-		--secret-id "$(name)" \
-		--secret-string "$(secret_value)" \
-
 save-token: ## Helper for saving a new Github token to Secrets Manager
 	# Example: save-token token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
 	@test $(token)
@@ -260,6 +252,14 @@ update:  ## Update all project dependencies
 update-releaser:  ## Update the goreleaser application
 	@brew update
 	@brew upgrade goreleaser
+
+update-secret: ## Updates an existing secret in AWS SecretsManager
+	# Example: update-secret name='production/test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}'
+	@test "$(name)"
+	@test "$(secret_value)"
+	aws secretsmanager update-secret \
+		--secret-id "$(name)" \
+		--secret-string "$(secret_value)" \
 
 vet: ## Run the Go vet application
 	@go vet -v ./...

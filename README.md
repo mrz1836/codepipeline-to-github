@@ -65,7 +65,7 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-**1)** Add your Github token to [Secrets Manager](https://aws.amazon.com/secrets-manager/) _(Only once per environment)_
+**1)** Add your Github token to [Secrets Manager](https://aws.amazon.com/secrets-manager/) _(Only once per stage)_
 ```shell script
 make save-token token=YOUR_GITHUB_TOKEN  kms_key_id=YOUR_KMS_KEY_ID  APPLICATION_STAGE_NAME=production
 ```
@@ -74,6 +74,11 @@ make save-token token=YOUR_GITHUB_TOKEN  kms_key_id=YOUR_KMS_KEY_ID  APPLICATION
 After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
+```
+
+_(Example)_ Customized deployment for another stage/branch
+```shell script
+make deploy APPLICATION_STAGE_NAME=development REPO_BRANCH=development
 ``` 
 
 If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
@@ -131,6 +136,7 @@ build                          Build the lambda function as a compiled applicati
 clean                          Remove previous builds and any test cache data
 clean-mods                     Remove all the Go mod cache
 coverage                       Shows the test coverage
+create-secret                  Creates an secret into AWS SecretsManager
 deploy                         Build, prepare and deploy
 godocs                         Sync the latest tag with GoDocs
 help                           Show all commands available
@@ -141,15 +147,19 @@ release                        Full production release (creates release in Githu
 release-test                   Full production test release (everything except deploy)
 release-snap                   Test the full release (build binaries)
 run                            Fires the lambda function (IE: run event=started)
-save-token                     Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
+save-param                     Saves a plain-text string parameter in SSM
+save-param-encrypted           Saves an encrypted string value as a parameter in SSM
+save-token                     Helper for saving a new Github token to Secrets Manager
 tag                            Generate a new tag and push (IE: tag version=0.0.0)
 tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
 tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
 teardown                       Deletes the entire stack
 test                           Runs vet, lint and ALL tests
 test-short                     Runs vet, lint and tests (excludes integration tests)
+test-travis                    Runs tests via Travis (also exports coverage)
 update                         Update all project dependencies
 update-releaser                Update the goreleaser application
+update-secret                  Updates an existing secret in AWS SecretsManager
 vet                            Run the Go vet application
 ```
 </details>
