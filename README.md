@@ -47,6 +47,8 @@ Any changes to the environment via the [AWS CloudFormation template](application
 
 The actual build process can be found in the [buildspec.yml](buildspec.yml) file.
 
+The app relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) to store environment variables.
+
 <details>
 <summary><strong><code>Create New Hosting Environment (AWS)</code></strong></summary>
 
@@ -63,9 +65,9 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-**1)** Add your Github token to [SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+**1)** Add your Github token to [Secrets Manager](https://aws.amazon.com/secrets-manager/) _(Only once per environment)_
 ```shell script
-make save-token token=YOUR_TOKEN
+make save-token token=YOUR_GITHUB_TOKEN  kms_key_id=YOUR_KMS_KEY_ID  STAGE_NAME=production
 ```
 
 **2)** One command will build, test, package and deploy the application to AWS. 

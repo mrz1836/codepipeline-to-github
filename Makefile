@@ -1,6 +1,11 @@
+## Stage or environment for the application
+ifndef STAGE_NAME
+override STAGE_NAME=production
+endif
+
 ## Tags for the application in AWS
 ifndef AWS_TAGS
-override AWS_TAGS="Stage=production Product=integration"
+override AWS_TAGS="Stage=$(STAGE_NAME) Product=integration"
 endif
 
 ## Default S3 bucket (already exists) to store distribution files
@@ -25,7 +30,7 @@ endif
 
 ## CloudFormation parameter overrides
 ifndef PARAMETER_OVERRIDE
-override PARAMETER_OVERRIDE="ApplicationStageName=production GitHubBranch=master"
+override PARAMETER_OVERRIDE="ApplicationStageName=$(STAGE_NAME) GitHubBranch=master"
 endif
 
 ## Raw cloud formation template for the application
@@ -51,12 +56,31 @@ endif
 ## Default Repo Domain
 GIT_DOMAIN=github.com
 
-## Automatically detect the repo owner and repo name
+## Check if we have the application
+ifeq ($(shell command -v git),)
+
+## Automatically detect the repo owner and repo name (for local use with Git)
 REPO_NAME=$(shell basename `git rev-parse --show-toplevel`)
 REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
 
 ## Set the version (for go docs)
 VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
+endif
+
+## Not defined? Use default repo name
+ifeq ($(REPO_NAME),)
+REPO_NAME=code-pipeline-github
+endif
+
+## Not defined? Use default repo owner
+ifeq ($(REPO_OWNER),)
+REPO_OWNER=mrz1836
+endif
+
+## Default branch for webhooks
+ifndef REPO_BRANCH
+override REPO_BRANCH=master
+endif
 
 ## Set the distribution folder
 ifndef DISTRIBUTIONS_DIR
@@ -95,7 +119,13 @@ deploy: ## Build, prepare and deploy
         --template-file $(TEMPLATE_PACKAGED) \
         --stack-name $(STACK_NAME)  \
         --region $(AWS_REGION) \
-        --parameter-overrides "$(PARAMETER_OVERRIDE)" \
+        --parameter-overrides ApplicationName=$(STACK_NAME) \
+        ApplicationStageName=$(STAGE_NAME) \
+        ApplicationBucket=$(S3_BUCKET) \
+        GitHubOwner=$(REPO_OWNER) \
+        GitHubRepo=$(REPO_NAME) \
+        GitHubBranch=$(REPO_BRANCH) \
+        ApplicationEnvironmentEncryptionKeyID=/$(STAGE_NAME)/global/kms_key_id \
         --capabilities "CAPABILITY_IAM" \
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
@@ -122,7 +152,7 @@ package: ## Process the CF template and prepare for deployment
         --output-template-file $(TEMPLATE_PACKAGED) \
         --s3-bucket $(S3_BUCKET) \
         --s3-prefix $(S3_PREFIX) \
-        --region $(AWS_REGION) \
+        --region $(AWS_REGION);
 
 release: ## Full production release (creates release in Github)
 	@goreleaser --rm-dist
@@ -139,9 +169,56 @@ run: ## Fires the lambda function (IE: run event=started)
 	@if [ "$(event)" == "" ]; then echo $(eval event += started); fi
 	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
 
-save-token: ## Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
+save-param: ## Saves a parameter in SSM
+	# Example: save-param param_name='test' param_value='This is a test'
+	@test "$(param_value)"
+	@test "$(param_name)"
+	@aws ssm put-parameter --name "$(param_name)" --value "$(param_value)" --type String --overwrite
+
+save-param-encrypted: ## Saves an encrypted value as a parameter in SSM
+	# Example: save-param-encrypted param_name='test' param_value='This is a test' kms_key_id=b329...
+	@test "$(param_value)"
+	@test "$(param_name)"
+	@test $(kms_key_id)
+	@aws ssm put-parameter \
+       --type String  \
+       --overwrite  \
+       --name "$(param_name)" \
+       --value $(shell aws kms encrypt  \
+                  --output text \
+                  --query CiphertextBlob \
+                  --key-id $(kms_key_id) \
+                  --plaintext "$(param_value)") \
+
+create-secret: ## Creates an secret into AWS SecretsManager
+	# Example: create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
+	@test "$(name)"
+	@test "$(description)"
+	@test "$(secret_value)"
+	@test $(kms_key_id)
+	@aws secretsmanager create-secret \
+		--name "$(name)" \
+		--description "$(description)" \
+		--kms-key-id $(kms_key_id) \
+		--secret-string "$(secret_value)" \
+
+update-secret: ## Updates an existing secret in AWS SecretsManager
+	# Example: update-secret name='production/test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}'
+	@test "$(name)"
+	@test "$(secret_value)"
+	aws secretsmanager update-secret \
+		--secret-id "$(name)" \
+		--secret-string "$(secret_value)" \
+
+save-token: ## Helper for saving a new Github token to Secrets Manager
+	# Example: save-token token=12345... kms_key_id=b329... STAGE_NAME=production
 	@test $(token)
-	@aws ssm put-parameter --name /github/personal_access_token --value $(token) --type String
+	@test $(kms_key_id)
+	@$(MAKE) create-secret \
+          name=$(STAGE_NAME)/github \
+          description='Github access token for status updates' \
+          secret_value="{\"status_personal_token\":\"$(token)\"}" \
+          kms_key_id=$(kms_key_id)  \
 
 tag: ## Generate a new tag and push (IE: tag version=0.0.0)
 	@test $(version)

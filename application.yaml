@@ -9,7 +9,7 @@ Parameters:
   ApplicationName:
     Description: 'used to create the name of the application in cloud formation'
     Type: String
-    Default: 'codepipeline-to-github'
+    #Default: 'codepipeline-to-github' #(located in Makefile)
     AllowedPattern: '[a-zA-Z0-9-_]*'
     MinLength: 3
     MaxLength: 64
@@ -21,21 +21,29 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9-_]*'
     MinLength: 1
     MaxLength: 16
-    Default: 'production'
+    #Default: 'production' #(located in Makefile)
     ConstraintDescription: 'must be a valid stage name (IE: dev, staging, production)'
 
   ApplicationBucket:
     Type: String
     Description: 'Pre-existing S3 bucket that will store the application files for deployment'
     MinLength: 5
-    Default: 'cloudformation-distribution-raw-files'
+    #Default: 'cloudformation-distribution-raw-files' #(located in Makefile)
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid s3 bucket location'
+
+  ApplicationEnvironmentEncryptionKeyID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: 'The ID of the KMS key used to decrypt environment variables'
+    NoEcho: true
+    MinLength: 10
+    #AllowedPattern: "[A-Za-z0-9-_]+"
+    #ConstraintDescription: 'must be a KMS Key ID'
 
   GitHubOwner:
     Type: String
     Description: 'the repository owner or username'
-    Default: "mrz1836"
+    #Default: "mrz1836" #(located in Makefile)
     MinLength: 2
     AllowedPattern: "[A-Za-z0-9-]+"
     ConstraintDescription: 'must be a valid repository username'
@@ -43,7 +51,7 @@ Parameters:
   GitHubRepo:
     Type: String
     Description: 'the repository name'
-    Default: "codepipeline-to-github"
+    #Default: "codepipeline-to-github"  #(located in Makefile)
     MinLength: 1
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid repository name'
@@ -51,7 +59,7 @@ Parameters:
   GitHubBranch:
     Type: String
     Description: 'the repository branch that will trigger automatic deployments'
-    Default: "master"
+    #Default: "master" #(located in Makefile)
     MinLength: 1
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid branch name'
@@ -65,7 +73,7 @@ Metadata:
     #ReadmeUrl: README.md
     Labels: ['lambda','github','codepipeline']
     HomePageUrl: !Sub 'https://github.com/${GitHubOwner}/${GitHubRepo}'
-    SemanticVersion: "0.0.1"
+    SemanticVersion: '0.0.1'
     SourceCodeUrl: !Sub 'https://github.com/${GitHubOwner}/${GitHubRepo}'
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
@@ -77,10 +85,12 @@ Globals:
     CodeUri: 'functions'
     Environment:
       Variables:
-        GITHUB_ACCESS_TOKEN: "{{resolve:ssm:/github/personal_access_token:1}}"
+        GITHUB_ACCESS_TOKEN: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token}}'
 
 # More info about Resources: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-resources-and-properties.html
 Resources:
+
+  # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
   StatusFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -105,12 +115,14 @@ Resources:
                   - "SUCCEEDED"
                   - "FAILED"
 
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-logs-loggroup.html
   StatusFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/aws/lambda/${StatusFunction}'
       RetentionInDays: 90
 
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codepipeline-pipeline.html
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     DependsOn:
@@ -122,6 +134,7 @@ Resources:
         Location: !Ref ApplicationBucket
       RestartExecutionOnUpdate: false
       RoleArn: !GetAtt CodePipelineRole.Arn
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codepipeline-pipeline-stages.html
       Stages:
         - Name: Source
           Actions:
@@ -140,7 +153,7 @@ Resources:
                 Repo: !Ref GitHubRepo
                 Branch: !Ref GitHubBranch
                 PollForSourceChanges: false
-                OAuthToken: "{{resolve:ssm:/github/personal_access_token:1}}"
+                OAuthToken: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token}}'
         - Name: Build
           Actions:
             - Name: Build-and-Deploy-Stack
@@ -156,6 +169,7 @@ Resources:
                 ProjectName:
                   Ref: CodeBuildProject
 
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codebuild-project.html
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -185,14 +199,15 @@ Resources:
         BuildSpec: "buildspec.yml"
       TimeoutInMinutes: 15
 
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codepipeline-webhook.html
   GithubWebhook:
-    Type: 'AWS::CodePipeline::Webhook'
+    Type: AWS::CodePipeline::Webhook
     DependsOn:
       - CodePipeline
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: "{{resolve:ssm:/github/personal_access_token:1}}"
+        SecretToken: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token}}'
       RegisterWithThirdParty: 'true'
       Filters:
         - JsonPath: "$.ref"
@@ -201,6 +216,7 @@ Resources:
       TargetAction: Source-From-Github
       TargetPipelineVersion: !GetAtt CodePipeline.Version
 
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -217,6 +233,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
 
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
   CodePipelineRole:
     Type: AWS::IAM::Role
     Properties:
