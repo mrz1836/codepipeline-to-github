@@ -167,13 +167,13 @@ run: ## Fires the lambda function (IE: run event=started)
 	@if [ "$(event)" == "" ]; then echo $(eval event += started); fi
 	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
 
-save-param: ## Saves a parameter in SSM
+save-param: ## Saves a plain-text string parameter in SSM
 	# Example: save-param param_name='test' param_value='This is a test'
 	@test "$(param_value)"
 	@test "$(param_name)"
 	@aws ssm put-parameter --name "$(param_name)" --value "$(param_value)" --type String --overwrite
 
-save-param-encrypted: ## Saves an encrypted value as a parameter in SSM
+save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
 	# Example: save-param-encrypted param_name='test' param_value='This is a test' kms_key_id=b329...
 	@test "$(param_value)"
 	@test "$(param_name)"
@@ -209,7 +209,7 @@ update-secret: ## Updates an existing secret in AWS SecretsManager
 		--secret-string "$(secret_value)" \
 
 save-token: ## Helper for saving a new Github token to Secrets Manager
-	# Example: save-token token=12345... kms_key_id=b329... APPLICATION_STAGE_NAME=production
+	# Example: save-token token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
 	@test $(token)
 	@test $(kms_key_id)
 	@$(MAKE) create-secret \

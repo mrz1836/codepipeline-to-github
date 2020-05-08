@@ -67,7 +67,7 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **1)** Add your Github token to [Secrets Manager](https://aws.amazon.com/secrets-manager/) _(Only once per environment)_
 ```shell script
-make save-token token=YOUR_GITHUB_TOKEN  kms_key_id=YOUR_KMS_KEY_ID  STAGE_NAME=production
+make save-token token=YOUR_GITHUB_TOKEN  kms_key_id=YOUR_KMS_KEY_ID  APPLICATION_STAGE_NAME=production
 ```
 
 **2)** One command will build, test, package and deploy the application to AWS. 

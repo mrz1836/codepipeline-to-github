@@ -9,7 +9,6 @@ Parameters:
   ApplicationName:
     Description: 'used to create the name of the application in cloud formation'
     Type: String
-    #Default: 'codepipeline-to-github' #(located in Makefile)
     AllowedPattern: '[a-zA-Z0-9-_]*'
     MinLength: 3
     MaxLength: 64
@@ -21,29 +20,25 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9-_]*'
     MinLength: 1
     MaxLength: 16
-    #Default: 'production' #(located in Makefile)
     ConstraintDescription: 'must be a valid stage name (IE: dev, staging, production)'
 
   ApplicationBucket:
     Type: String
     Description: 'Pre-existing S3 bucket that will store the application files for deployment'
     MinLength: 5
-    #Default: 'cloudformation-distribution-raw-files' #(located in Makefile)
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid s3 bucket location'
 
   ApplicationBucketPrefix:
     Type: String
     Description: 'Prefix directory inside the bucket for the application'
-    MinLength: 5
-    #Default: 'codepipeline-to-github' #(located in Makefile)
+    MinLength: 1
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid s3 bucket prefix'
 
   RepoOwner:
     Type: String
     Description: 'the repository owner or username'
-    #Default: "mrz1836" #(located in Makefile)
     MinLength: 2
     AllowedPattern: "[A-Za-z0-9-]+"
     ConstraintDescription: 'must be a valid repository username'
@@ -51,7 +46,6 @@ Parameters:
   RepoName:
     Type: String
     Description: 'the repository name'
-    #Default: "codepipeline-to-github"  #(located in Makefile)
     MinLength: 1
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid repository name'
@@ -59,9 +53,8 @@ Parameters:
   RepoBranch:
     Type: String
     Description: 'the repository branch that will trigger automatic deployments'
-    #Default: "master" #(located in Makefile)
     MinLength: 1
-    AllowedPattern: "[A-Za-z0-9-_]+"
+    AllowedPattern: "[A-Za-z0-9-_/]+"
     ConstraintDescription: 'must be a valid branch name'
 
 # More info about MetaData: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-publishing-applications-metadata-properties.html
@@ -260,7 +253,7 @@ Resources:
             Service:
               - codepipeline.amazonaws.com
               - s3.amazonaws.com
-              - secretsmanager.amazonaws.com
+              #- secretsmanager.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
