@@ -1,95 +1,93 @@
 ## Stage or environment for the application
-ifndef STAGE_NAME
-override STAGE_NAME=production
+ifndef APPLICATION_STAGE_NAME
+	override APPLICATION_STAGE_NAME="production"
 endif
 
 ## Tags for the application in AWS
 ifndef AWS_TAGS
-override AWS_TAGS="Stage=$(STAGE_NAME) Product=integration"
+	override AWS_TAGS="Stage=$(APPLICATION_STAGE_NAME) Product=integration"
 endif
 
 ## Default S3 bucket (already exists) to store distribution files
-ifndef S3_BUCKET
-override S3_BUCKET=cloudformation-distribution-raw-files
+ifndef APPLICATION_BUCKET
+	override APPLICATION_BUCKET="cloudformation-distribution-raw-files"
 endif
 
-## Cloud formation stack name
-ifndef STACK_NAME
-override STACK_NAME=codepipeline-to-github
+## Cloud formation stack name (combines the app name with the stage for unique stacks)
+ifndef APPLICATION_NAME
+	override APPLICATION_NAME="codepipeline-to-github-$(APPLICATION_STAGE_NAME)"
 endif
 
 ## S3 prefix to store the distribution files
-ifndef S3_PREFIX
-override S3_PREFIX=$(STACK_NAME)
+ifndef APPLICATION_BUCKET_PREFIX
+	override APPLICATION_BUCKET_PREFIX=$(APPLICATION_NAME)
 endif
 
 ## Default region for the application
 ifndef AWS_REGION
-override AWS_REGION=us-east-1
-endif
-
-## CloudFormation parameter overrides
-ifndef PARAMETER_OVERRIDE
-override PARAMETER_OVERRIDE="ApplicationStageName=$(STAGE_NAME) GitHubBranch=master"
+	override AWS_REGION=us-east-1
 endif
 
 ## Raw cloud formation template for the application
 ifndef TEMPLATE_RAW
-override TEMPLATE_RAW=application.yaml
+	override TEMPLATE_RAW=application.yaml
 endif
 
 ## Packaged cloud formation template
 ifndef TEMPLATE_PACKAGED
-override TEMPLATE_PACKAGED=packaged.yaml
+	override TEMPLATE_PACKAGED=packaged.yaml
 endif
 
 ## Function: status (binary name)
 ifndef STATUS_BINARY
-override STATUS_BINARY=status
+	override STATUS_BINARY=status
 endif
 
 ## Package directory name
 ifndef PACKAGE_NAME
-override PACKAGE_NAME=status
+	override PACKAGE_NAME=status
 endif
 
-## Default Repo Domain
-GIT_DOMAIN=github.com
+## Default repository domain name
+ifndef GIT_DOMAIN
+	override GIT_DOMAIN=github.com
+endif
 
-## Check if we have the application
-ifeq ($(shell command -v git),)
+## Do we have git available?
+HAS_GIT := $(shell command -v git 2> /dev/null)
 
-## Automatically detect the repo owner and repo name (for local use with Git)
-REPO_NAME=$(shell basename `git rev-parse --show-toplevel`)
-REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
+ifdef HAS_GIT
+	## Automatically detect the repo owner and repo name (for local use with Git)
+	REPO_NAME=$(shell basename `git rev-parse --show-toplevel`)
+	REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
 
-## Set the version (for go docs)
-VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
+	## Set the version (for go docs)
+	VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
 endif
 
 ## Not defined? Use default repo name
 ifeq ($(REPO_NAME),)
-REPO_NAME=code-pipeline-github
+	REPO_NAME="codepipeline-to-github"
 endif
 
 ## Not defined? Use default repo owner
 ifeq ($(REPO_OWNER),)
-REPO_OWNER=mrz1836
+	REPO_OWNER="mrz1836"
 endif
 
 ## Default branch for webhooks
 ifndef REPO_BRANCH
-override REPO_BRANCH=master
+	override REPO_BRANCH="master"
 endif
 
 ## Set the distribution folder
 ifndef DISTRIBUTIONS_DIR
-override DISTRIBUTIONS_DIR=./dist
+	override DISTRIBUTIONS_DIR=./dist
 endif
 
 ## Set the release folder
 ifndef RELEASES_DIR
-override RELEASES_DIR=./releases
+	override RELEASES_DIR=./releases
 endif
 
 .PHONY: test lint clean release lambda deploy
@@ -117,15 +115,15 @@ deploy: ## Build, prepare and deploy
 	@$(MAKE) package
 	@sam deploy \
         --template-file $(TEMPLATE_PACKAGED) \
-        --stack-name $(STACK_NAME)  \
+        --stack-name $(APPLICATION_NAME)  \
         --region $(AWS_REGION) \
-        --parameter-overrides ApplicationName=$(STACK_NAME) \
-        ApplicationStageName=$(STAGE_NAME) \
-        ApplicationBucket=$(S3_BUCKET) \
-        GitHubOwner=$(REPO_OWNER) \
-        GitHubRepo=$(REPO_NAME) \
-        GitHubBranch=$(REPO_BRANCH) \
-        ApplicationEnvironmentEncryptionKeyID=/$(STAGE_NAME)/global/kms_key_id \
+        --parameter-overrides ApplicationName=$(APPLICATION_NAME) \
+        ApplicationStageName=$(APPLICATION_STAGE_NAME) \
+        ApplicationBucket=$(APPLICATION_BUCKET) \
+        ApplicationBucketPrefix=$(APPLICATION_BUCKET_PREFIX) \
+        RepoOwner=$(REPO_OWNER) \
+        RepoName=$(REPO_NAME) \
+        RepoBranch=$(REPO_BRANCH) \
         --capabilities "CAPABILITY_IAM" \
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
@@ -150,8 +148,8 @@ package: ## Process the CF template and prepare for deployment
 	@sam package \
         --template-file $(TEMPLATE_RAW)  \
         --output-template-file $(TEMPLATE_PACKAGED) \
-        --s3-bucket $(S3_BUCKET) \
-        --s3-prefix $(S3_PREFIX) \
+        --s3-bucket $(APPLICATION_BUCKET) \
+        --s3-prefix $(APPLICATION_BUCKET_PREFIX) \
         --region $(AWS_REGION);
 
 release: ## Full production release (creates release in Github)
@@ -211,11 +209,11 @@ update-secret: ## Updates an existing secret in AWS SecretsManager
 		--secret-string "$(secret_value)" \
 
 save-token: ## Helper for saving a new Github token to Secrets Manager
-	# Example: save-token token=12345... kms_key_id=b329... STAGE_NAME=production
+	# Example: save-token token=12345... kms_key_id=b329... APPLICATION_STAGE_NAME=production
 	@test $(token)
 	@test $(kms_key_id)
 	@$(MAKE) create-secret \
-          name=$(STAGE_NAME)/github \
+          name=$(APPLICATION_STAGE_NAME)/github \
           description='Github access token for status updates' \
           secret_value="{\"status_personal_token\":\"$(token)\"}" \
           kms_key_id=$(kms_key_id)  \
@@ -238,8 +236,8 @@ tag-update: ## Update an existing tag to current commit (IE: tag-update version=
 	@git fetch --tags -f
 
 teardown: ## Deletes the entire stack
-	@test $(STACK_NAME)
-	@aws cloudformation delete-stack --stack-name $(STACK_NAME)
+	@test $(APPLICATION_NAME)
+	@aws cloudformation delete-stack --stack-name $(APPLICATION_NAME)
 
 test: ## Runs vet, lint and ALL tests
 	@$(MAKE) vet
