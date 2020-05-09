@@ -20,7 +20,7 @@ The package [golint](https://github.com/golang/lint) differs from [gofmt](https:
 How to install [golint](https://github.com/golang/lint):
 ```shell script
 go get -u golang.org/x/lint/golint
-cd ../lambda-codepipeline-github
+cd ../codepipeline-to-github
 golint
 ```
 
@@ -29,7 +29,7 @@ golint
 
 How to run [vet](https://golang.org/cmd/vet/):
 ```shell script
-cd ../lambda-codepipeline-github
+cd ../codepipeline-to-github
 go vet -v
 ```
 

@@ -1,14 +1,16 @@
-# CodePipeline -> Lambda -> Github
-> Update a GitHub pull request status via CodePipeline events
+# CodePipeline → Lambda → Github
+> Update a GitHub commit status via CodePipeline events
 
-[![Go](https://img.shields.io/badge/Go-1.14.xx-blue.svg)](https://golang.org/)
-[![Build Status](https://travis-ci.com/mrz1836/lambda-codepipeline-github.svg?branch=master&v=1)](https://travis-ci.com/mrz1836/lambda-codepipeline-github)
-[![Report](https://goreportcard.com/badge/github.com/mrz1836/lambda-codepipeline-github?style=flat&v=1)](https://goreportcard.com/report/github.com/mrz1836/lambda-codepipeline-github)
-[![codecov](https://codecov.io/gh/mrz1836/lambda-codepipeline-github/branch/master/graph/badge.svg?v=1)](https://codecov.io/gh/mrz1836/lambda-codepipeline-github)
-[![Release](https://img.shields.io/github/release-pre/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)](https://github.com/mrz1836/lambda-codepipeline-github/releases)
+[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github)](https://golang.org/)
+[![Build Status](https://travis-ci.com/mrz1836/codepipeline-to-github.svg?branch=master&v=3)](https://travis-ci.com/mrz1836/codepipeline-to-github)
+[![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
+[![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
+[![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
+[![GoDoc](https://godoc.org/github.com/mrz1836/codepipeline-to-github?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/codepipeline-to-github)
 
 ## Table of Contents
 - [Installation](#installation)
+- [Deployment & Hosting](#deployment--hosting)
 - [Documentation](#documentation)
 - [Examples & Tests](#examples--tests)
 - [Code Standards](#code-standards)
@@ -26,28 +28,68 @@
 - [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
 
 
-**1)** Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
+Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
-go get github.com/mrz1818/lambda-codeship-github/...
-cd $GOPATH/src/github.com/mrz1818/lambda-codeship-github
+go get github.com/mrz1818/codepipeline-to-github
+cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 ```
 
-**2)** Test your local installation (executes the [`status`](status/status.go) function)
-```shell script
-make run-status
-```   
+<details>
+<summary><strong><code>Setup to run locally</code></strong></summary>
 
-### Deployment & Hosting
+**1)** Modify the [event json](events/started-event.json) to a recent pipeline execution and pipeline name
+```json
+"detail": {
+  "pipeline": "your-pipeline-name",
+  "execution-id": "some-execution-id"
+}
+```
+
+**2)** Modify the [local-env.json](local-env.json) file with your Github Personal Access Token
+```json
+"StatusFunction": {
+  "GITHUB_ACCESS_TOKEN": "your-token-goes-here"
+}
+``` 
+
+**3)** Finally, run the handler which should produce `null` as a success
+```shell script
+make run event="started"
+``` 
+</details>
+
+## Deployment & Hosting
 This repository has CI integration using [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
 
-Deploying to the `master` branch will automatically sync the code to [AWS Lambda](https://aws.amazon.com/lambda/).
+Deploying to the `master` branch will automatically start the process of shipping the code to [AWS Lambda](https://aws.amazon.com/lambda/).
 
 Any changes to the environment via the [AWS CloudFormation template](application.yaml) will be applied.
-
 The actual build process can be found in the [buildspec.yml](buildspec.yml) file.
+
+The application relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) and [SSM](https://aws.amazon.com/systems-manager/features/) to store environment variables.
+
+<details>
+<summary><strong><code>Create Environment Keys (AWS)</code></strong></summary>
+
+> If you already have KMS keys for encrypting environment variables, you can skip this step.
+
+**1)** Create a [`KMS Key` in your console](https://console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys) per `<stage>` for your application(s):
+```text
+Example:
+name = "<stage>EnvironmentVars"
+description = "Encryption key for <stage> environment variables"
+```
+
+**2)** Store the [`KMS Key ID`](https://console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys) in [SSM](https://aws.amazon.com/systems-manager/features/) for global use
+```shell script
+make save-param param_name="/<stage>/global/kms_key_id" param_value="YOUR_KMS_KEY_ID"
+```
+</details>
 
 <details>
 <summary><strong><code>Create New Hosting Environment (AWS)</code></strong></summary>
+
+<img src=".github/IMAGES/infrastructure-diagram.png" alt="infrastructure diagram" height="400" />
 
 This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack with:
 - (1) [Lambda](https://aws.amazon.com/lambda/) Function(s)
@@ -60,15 +102,24 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-**1)** Add your Github token to [SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/).
+To be able to decrypt the `token` at runtime, the Lambda function will need permission to 
+access the KMS Key with the KeyID specified in SSM: `/<stage>/global/kms_key_id`
+
+**1)** Add your Github personal access token _(Only once per stage)_
 ```shell script
-make save-token token=YOUR_TOKEN
+make save-token token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLICATION_STAGE_NAME="<stage>"
 ```
 
 **2)** One command will build, test, package and deploy the application to AWS. 
 After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
+```
+
+_(Example)_ Customized deployment for another stage/branch
+```shell script
+make deploy APPLICATION_STAGE_NAME="development" REPO_BRANCH="development"
 ``` 
 
 If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
@@ -93,11 +144,18 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 </details>
 
 ## Documentation
-You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/lambda-codepipeline-github?tab=subdirectories).
+The [`status`](status.go) handler is composed of:
+```text
+- Processes incoming CloudWatch events from CodePipeline
+- Decrypts environment variables (Github Token)
+- Gets the latest information from CodePipeline via an ExecutionID
+- Determine the Github status based on the Execution status
+- Post request to Github to notify the status change
+``` 
 
-Run the status function with different [events](status/events)
+Run the status function with different [events](events)
 ```shell script
-make run-status event=failed
+make run event="failed"
 ``` 
 
 <details>
@@ -120,13 +178,16 @@ make help
 
 List of all current commands:
 ```text
-all                            Run multiple pre-configured commands at once
+all                            Run lint, test and vet
 bench                          Run all benchmarks in the Go application
 build                          Build the lambda function as a compiled application
-clean                          Remove previous builds and any test cache data
+clean                          Remove previous builds, test cache, and packaged releases
 clean-mods                     Remove all the Go mod cache
 coverage                       Shows the test coverage
+create-secret                  Creates an secret into AWS SecretsManager
+decrypt                        Encrypts data using a KMY Key ID
 deploy                         Build, prepare and deploy
+encrypt                        Encrypts data using a KMY Key ID
 godocs                         Sync the latest tag with GoDocs
 help                           Show all commands available
 lambda                         Build a compiled version to deploy to Lambda
@@ -135,22 +196,26 @@ package                        Process the CF template and prepare for deploymen
 release                        Full production release (creates release in Github)
 release-test                   Full production test release (everything except deploy)
 release-snap                   Test the full release (build binaries)
-run-status                     Fires the lambda function (IE: run-status event=started)
-save-token                     Saves the token to the parameter store (IE: save-token token=YOUR_TOKEN)
+run                            Fires the lambda function (IE: run event=started)
+save-param                     Saves a plain-text string parameter in SSM
+save-param-encrypted           Saves an encrypted string value as a parameter in SSM
+save-token                     Helper for saving a new Github token to Secrets Manager
 tag                            Generate a new tag and push (IE: tag version=0.0.0)
 tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
 tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
 teardown                       Deletes the entire stack
 test                           Runs vet, lint and ALL tests
 test-short                     Runs vet, lint and tests (excludes integration tests)
+test-travis                    Runs tests via Travis (also exports coverage)
 update                         Update all project dependencies
 update-releaser                Update the goreleaser application
+update-secret                  Updates an existing secret in AWS SecretsManager
 vet                            Run the Go vet application
 ```
 </details>
 
 ## Examples & Tests
-All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/lambda-codepipeline-github) and uses [Go version 1.14.x](https://golang.org/doc/go1.14). View the [deployment configuration file](.travis.yml).
+All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/codepipeline-to-github) and uses [Go version 1.14.x](https://golang.org/doc/go1.14). View the [deployment configuration file](.travis.yml).
 
 Run all tests (including integration tests)
 ```shell script
@@ -172,7 +237,7 @@ View the [contributing guidelines](CONTRIBUTING.md) and follow the [code of cond
 
 Support the development of this project 🙏
 
-[![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=lambda-codepipeline-github)
+[![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=codepipeline-to-github)
 
 ### Credits
 This application would not be possible without the work provided in these repositories: 
@@ -183,4 +248,4 @@ This application would not be possible without the work provided in these reposi
 
 ## License
 
-![License](https://img.shields.io/github/license/mrz1836/lambda-codepipeline-github.svg?style=flat&v=1)
+![License](https://img.shields.io/github/license/mrz1836/codepipeline-to-github.svg?style=flat&v=1)

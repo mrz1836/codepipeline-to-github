@@ -4,8 +4,6 @@ phases:
     runtime-versions:
       python: 3.8
     commands:
-      - go get -u golang.org/x/lint/golint
-      - go get ./...
       - pip install --upgrade pip
       - pip install pipenv --user
       - pipenv install awscli aws-sam-cli
