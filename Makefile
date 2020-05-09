@@ -124,6 +124,11 @@ create-secret: ## Creates an secret into AWS SecretsManager
 		--kms-key-id $(kms_key_id) \
 		--secret-string "$(secret_value)" \
 
+decrypt: ## Encrypts data using a KMY Key ID
+	@# Example: make decrypt decrypt_value=AQICAHgrSMx+3O7...
+	@test "$(decrypt_value)"
+	@aws kms decrypt --ciphertext-blob "$(decrypt_value)" --output text --query Plaintext | base64 --decode
+
 deploy: ## Build, prepare and deploy
 	@$(MAKE) package
 	@sam deploy \
@@ -142,6 +147,12 @@ deploy: ## Build, prepare and deploy
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
         --no-confirm-changeset
+
+encrypt: ## Encrypts data using a KMY Key ID
+	@# Example make encrypt kms_key_id=b329... encrypt_value=YourSecret
+	@test $(kms_key_id)
+	@test "$(encrypt_value)"
+	@aws kms encrypt --output text --query CiphertextBlob --key-id $(kms_key_id) --plaintext "$(shell echo "$(encrypt_value)" | base64)"
 
 godocs: ## Sync the latest tag with GoDocs
 	@curl https://proxy.golang.org/$(GIT_DOMAIN)/$(REPO_OWNER)/$(REPO_NAME)/@v/$(VERSION_SHORT).info
@@ -182,13 +193,13 @@ run: ## Fires the lambda function (IE: run event=started)
 	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
 
 save-param: ## Saves a plain-text string parameter in SSM
-	@# Example: save-param param_name='test' param_value='This is a test'
+	@# Example: make save-param param_name='test' param_value='This is a test'
 	@test "$(param_value)"
 	@test "$(param_name)"
 	@aws ssm put-parameter --name "$(param_name)" --value "$(param_value)" --type String --overwrite
 
 save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
-	@# Example: save-param-encrypted param_name='test' param_value='This is a test' kms_key_id=b329...
+	@# Example: make save-param-encrypted param_name='test' param_value='This is a test' kms_key_id=b329...
 	@test "$(param_value)"
 	@test "$(param_name)"
 	@test $(kms_key_id)
@@ -196,17 +207,13 @@ save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
        --type String  \
        --overwrite  \
        --name "$(param_name)" \
-       --value $(shell aws kms encrypt  \
-                  --output text \
-                  --query CiphertextBlob \
-                  --key-id $(kms_key_id) \
-                  --plaintext "$(param_value)") \
+       --value "$(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(param_value)")" \
 
 save-token: ## Helper for saving a new Github token to Secrets Manager
-	@# Example: save-token token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
+	@# Example: make save-token token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
 	@test $(token)
 	@test $(kms_key_id)
-	@$(eval encrypted := $(shell aws kms encrypt --output text --query CiphertextBlob --key-id $(kms_key_id) --plaintext $(token)))
+	@$(eval encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(token)"))
 	@$(MAKE) create-secret \
           name=$(APPLICATION_STAGE_NAME)/github \
           description='Github access token for status updates' \
@@ -257,7 +264,7 @@ update-releaser:  ## Update the goreleaser application
 	@brew upgrade goreleaser
 
 update-secret: ## Updates an existing secret in AWS SecretsManager
-	@# Example: update-secret name='production/test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}'
+	@# Example: make update-secret name='production/test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}'
 	@test "$(name)"
 	@test "$(secret_value)"
 	@aws secretsmanager update-secret \
