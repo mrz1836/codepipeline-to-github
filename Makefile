@@ -90,6 +90,11 @@ ifndef RELEASES_DIR
 	override RELEASES_DIR=./releases
 endif
 
+## Set the local environment variables when using "run"
+ifndef LOCAL_ENV_FILE
+	override LOCAL_ENV_FILE=local-env.json
+endif
+
 .PHONY: test lint clean release lambda deploy
 
 all: test ## Run lint, test and vet
@@ -190,7 +195,7 @@ release-snap: ## Test the full release (build binaries)
 run: ## Fires the lambda function (IE: run event=started)
 	@$(MAKE) lambda
 	@if [ "$(event)" == "" ]; then echo $(eval event += started); fi
-	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
+	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW) --env-vars $(LOCAL_ENV_FILE)
 
 save-param: ## Saves a plain-text string parameter in SSM
 	@# Example: make save-param param_name='test' param_value='This is a test'

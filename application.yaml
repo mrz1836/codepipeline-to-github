@@ -83,6 +83,7 @@ Globals:
     CodeUri: 'functions'
     Environment:
       Variables:
+        APPLICATION_STAGE_NAME: !Ref ApplicationStageName
         GITHUB_ACCESS_TOKEN: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token_encrypted}}'
 
 # More info about Resources: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-resources-and-properties.html
