@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -159,16 +158,10 @@ func loadConfiguration() (err error) {
 	// Create a new KMS session
 	kmsSvc := kms.New(awsSession)
 
-	log.Println("token in env: " + config.GithubAccessToken)
-
 	// Update the Token with the decoded value
-	var decodedString string
-	if decodedString, err = decodeString(kmsSvc, config.GithubAccessToken); err != nil {
+	if config.GithubAccessToken, err = decodeString(kmsSvc, config.GithubAccessToken); err != nil {
 		return err
 	}
-	config.GithubAccessToken = decodedString
-
-	log.Println("token decrypted: " + config.GithubAccessToken)
 
 	return
 }
@@ -239,19 +232,24 @@ func getCommit(pipelineName, executionID string) (commit, status string, revisio
 
 // decodeString uses AWS Key Management Service (AWS KMS) to decrypt environment variables.
 // In order for this method to work, the function needs access to the kms:Decrypt capability.
-func decodeString(kmsSvc *kms.KMS, payload string) (string, error) {
-	sDec, err := base64.StdEncoding.DecodeString(payload)
+func decodeString(kmsSvc *kms.KMS, encryptedText string) (string, error) {
+
+	// Decode the encryptedText
+	sDec, err := base64.StdEncoding.DecodeString(encryptedText)
 	if err != nil {
 		return "", err
 	}
 
+	// Decrypt the decoded text
 	var out *kms.DecryptOutput
 	if out, err = kmsSvc.Decrypt(&kms.DecryptInput{
 		CiphertextBlob: sDec,
 	}); err != nil {
 		return "", err
 	}
-	return string(out.Plaintext), err
+
+	// Return a string with no leading or trailing spaces or carriage returns
+	return strings.TrimSpace(strings.TrimSuffix(string(out.Plaintext), "\n")), err
 }
 
 // Start the lambda event handler
