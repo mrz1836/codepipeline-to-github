@@ -10,6 +10,7 @@
 
 ## Table of Contents
 - [Installation](#installation)
+- [Deployment & Hosting](#deployment--hosting)
 - [Documentation](#documentation)
 - [Examples & Tests](#examples--tests)
 - [Code Standards](#code-standards)
@@ -27,18 +28,37 @@
 - [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
 
 
-**1)** Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
+Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
 go get github.com/mrz1818/codepipeline-to-github
 cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 ```
 
-**2)** Test your local installation (executes the [`status`](status.go) function)
-```shell script
-make run
-```   
+<details>
+<summary><strong><code>Setup to run locally</code></strong></summary>
 
-### Deployment & Hosting
+**1)** Update the [event json](events/started-event.json) to a recent pipeline execution and pipeline name
+```json
+"detail": {
+  "pipeline": "your-pipeline-name",
+  "execution-id": "some-execution-id"
+}
+```
+
+**2)** Update the [local-env.json] file with your Github Personal Access Token
+```json
+"StatusFunction": {
+  "GITHUB_ACCESS_TOKEN": "your-token-goes-here"
+}
+``` 
+
+**3)** Finally, run the handler which should produce `null` as a success
+```shell script
+make run event="started"
+``` 
+</details>
+
+## Deployment & Hosting
 This repository has CI integration using [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
 
 Deploying to the `master` branch will automatically start the process of shipping the code to [AWS Lambda](https://aws.amazon.com/lambda/).
@@ -51,18 +71,18 @@ The application relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-m
 <details>
 <summary><strong><code>Create Environment Keys (AWS)</code></strong></summary>
 
-If you already have KMS keys for encrypting environment variables, you can skip this step.
+> If you already have KMS keys for encrypting environment variables, you can skip this step.
 
-**1)** Create a [`KMS Key`](https://console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys) per `<stage>` for your application(s):
+**1)** Create a [`KMS Key` in your console](https://console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys) per `<stage>` for your application(s):
 ```text
 Example:
-name = <stage>EnvironmentVars
+name = "<stage>EnvironmentVars"
 description = "Encryption key for <stage> environment variables"
 ```
 
 **2)** Store the [`KMS Key ID`](https://console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys) in [SSM](https://aws.amazon.com/systems-manager/features/) for global use
 ```shell script
-make save-param param_name=/<stage>/global/kms_key_id param_value=<your_kms_key_id>
+make save-param param_name="/<stage>/global/kms_key_id" param_value="YOUR_KMS_KEY_ID"
 ```
 </details>
 
@@ -84,11 +104,11 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/).
 To be able to decrypt the `token` at runtime, the Lambda function will need permission to 
-access the KMS Key with the KeyID specified in `/<stage>/global/kms_key_id`
+access the KMS Key with the KeyID specified in SSM: `/<stage>/global/kms_key_id`
 
 **1)** Add your Github personal access token _(Only once per stage)_
 ```shell script
-make save-token token=YOUR_GITHUB_TOKEN  kms_key_id=YOUR_KMS_KEY_ID  APPLICATION_STAGE_NAME=production
+make save-token token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLICATION_STAGE_NAME="<stage>"
 ```
 
 **2)** One command will build, test, package and deploy the application to AWS. 
@@ -99,7 +119,7 @@ make deploy
 
 _(Example)_ Customized deployment for another stage/branch
 ```shell script
-make deploy APPLICATION_STAGE_NAME=development REPO_BRANCH=development
+make deploy APPLICATION_STAGE_NAME="development" REPO_BRANCH="development"
 ``` 
 
 If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
@@ -124,11 +144,18 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 </details>
 
 ## Documentation
-You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/codepipeline-to-github?tab=subdirectories).
+The [`status`](status.go) handler is composed of:
+```text
+- Processes incoming CloudWatch events from CodePipeline
+- Decrypts environment variables (Github Token)
+- Gets the latest information from CodePipeline via an ExecutionID
+- Determine the Github status based on the Execution status
+- Post request to Github to notify the status change
+``` 
 
 Run the status function with different [events](events)
 ```shell script
-make run event=failed
+make run event="failed"
 ``` 
 
 <details>
@@ -158,7 +185,9 @@ clean                          Remove previous builds, test cache, and packaged 
 clean-mods                     Remove all the Go mod cache
 coverage                       Shows the test coverage
 create-secret                  Creates an secret into AWS SecretsManager
+decrypt                        Encrypts data using a KMY Key ID
 deploy                         Build, prepare and deploy
+encrypt                        Encrypts data using a KMY Key ID
 godocs                         Sync the latest tag with GoDocs
 help                           Show all commands available
 lambda                         Build a compiled version to deploy to Lambda
