@@ -24,8 +24,9 @@ import (
 
 // Application defaults
 const (
-	region             = "us-east-1"
 	sourceArtifactName = "SourceCode"
+	stageTesting       = "testing"
+	stageProduction    = "production"
 )
 
 // event is what is emitted by CloudWatch
@@ -53,6 +54,7 @@ type payload struct {
 type configuration struct {
 	AWSRegion         string `required:"true" split_words:"true" envconfig:"AWS_REGION"`
 	GithubAccessToken string `required:"true" split_words:"true" envconfig:"GITHUB_ACCESS_TOKEN"`
+	Stage             string `required:"true" split_words:"true" envconfig:"APPLICATION_STAGE_NAME"`
 }
 
 // Local application variables
@@ -98,7 +100,7 @@ func ProcessEvent(ev event) error {
 	// Setup the links
 	deepLink := fmt.Sprintf(
 		"https://%s.console.aws.amazon.com/codesuite/codepipeline/pipelines/%s/executions/%s",
-		region, ev.Detail.Pipeline, ev.Detail.ExecutionID)
+		config.AWSRegion, ev.Detail.Pipeline, ev.Detail.ExecutionID)
 	githubURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/statuses/%s", owner, repo, commit)
 
 	// Create the Github payload
@@ -148,6 +150,16 @@ func loadConfiguration() (err error) {
 		return
 	}
 
+	// There should be a value at this point
+	if len(config.GithubAccessToken) == 0 {
+		return errors.New("missing access token")
+	}
+
+	// Skip KMS on testing stage
+	if config.Stage == stageTesting {
+		return
+	}
+
 	// Create a new AWS session
 	if awsSession == nil {
 		awsSession = session.Must(session.NewSession(&aws.Config{
@@ -158,11 +170,8 @@ func loadConfiguration() (err error) {
 	// Create a new KMS session
 	kmsSvc := kms.New(awsSession)
 
-	// Update the Token with the decoded value
-	if config.GithubAccessToken, err = decodeString(kmsSvc, config.GithubAccessToken); err != nil {
-		return err
-	}
-
+	// Update the Token with the decoded value or fail
+	config.GithubAccessToken, err = decodeString(kmsSvc, config.GithubAccessToken)
 	return
 }
 
