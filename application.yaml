@@ -36,6 +36,11 @@ Parameters:
     AllowedPattern: "[A-Za-z0-9-_]+"
     ConstraintDescription: 'must be a valid s3 bucket prefix'
 
+  EncryptionKeyID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: "The ID of the KMS key used to decrypt environment variables"
+    MinLength: 5
+
   RepoOwner:
     Type: String
     Description: 'the repository owner or username'
@@ -78,7 +83,7 @@ Globals:
     CodeUri: 'functions'
     Environment:
       Variables:
-        GITHUB_ACCESS_TOKEN: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token}}'
+        GITHUB_ACCESS_TOKEN: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token_encrypted}}'
 
 # More info about Resources: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-resources-and-properties.html
 Resources:
@@ -93,6 +98,8 @@ Resources:
       Policies:
         - AWSCodePipelineReadOnlyAccess
         - AWSLambdaBasicExecutionRole
+        - KMSDecryptPolicy:
+            KeyId: !Ref EncryptionKeyID
       Events:
         Event:
           Type: CloudWatchEvent
@@ -201,7 +208,7 @@ Resources:
             Value: !Ref RepoBranch
           - Name: GITHUB_ACCESS_TOKEN
             Type: PLAINTEXT
-            Value: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token}}'
+            Value: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token_encrypted}}'
       Source:
         Type: CODEPIPELINE
         BuildSpec: "buildspec.yml"

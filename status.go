@@ -5,19 +5,22 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/codepipeline"
+	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/kelseyhightower/envconfig"
 )
 
 // Application defaults
@@ -47,6 +50,18 @@ type payload struct {
 	TargetURL   string `json:"target_url"`
 }
 
+// configuration is for the application's configuration settings
+type configuration struct {
+	AWSRegion         string `required:"true" split_words:"true" envconfig:"AWS_REGION"`
+	GithubAccessToken string `required:"true" split_words:"true" envconfig:"GITHUB_ACCESS_TOKEN"`
+}
+
+// Local application variables
+var (
+	awsSession *session.Session
+	config     configuration
+)
+
 // ProcessEvent is triggered by a CloudWatch event rule
 func ProcessEvent(ev event) error {
 
@@ -63,10 +78,9 @@ func ProcessEvent(ev event) error {
 		return errors.New("missing event param pipeline")
 	}
 
-	// Set the Github Token
-	githubToken := os.Getenv("GITHUB_ACCESS_TOKEN")
-	if len(githubToken) == 0 {
-		return errors.New("missing or invalid Github token")
+	// Load the configuration
+	if err := loadConfiguration(); err != nil {
+		return err
 	}
 
 	// Get the commit info from the pipeline execution
@@ -106,7 +120,7 @@ func ProcessEvent(ev event) error {
 
 	// Set the headers
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "token "+githubToken)
+	req.Header.Set("Authorization", "token "+config.GithubAccessToken)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
 	// Fire the request
@@ -127,11 +141,47 @@ func ProcessEvent(ev event) error {
 	return nil
 }
 
+// loadConfiguration will decrypt any encrypted variables
+func loadConfiguration() (err error) {
+
+	// Get configuration set using environment variables
+	if err = envconfig.Process("", &config); err != nil {
+		return
+	}
+
+	// Create a new AWS session
+	if awsSession == nil {
+		awsSession = session.Must(session.NewSession(&aws.Config{
+			Region: aws.String(config.AWSRegion),
+		}))
+	}
+
+	// Create a new KMS session
+	kmsSvc := kms.New(awsSession)
+
+	log.Println("token in env: " + config.GithubAccessToken)
+
+	// Update the Token with the decoded value
+	var decodedString string
+	if decodedString, err = decodeString(kmsSvc, config.GithubAccessToken); err != nil {
+		return err
+	}
+	config.GithubAccessToken = decodedString
+
+	log.Println("token decrypted: " + config.GithubAccessToken)
+
+	return
+}
+
 // getCommit will get the Github commit and revision url from an execution
 func getCommit(pipelineName, executionID string) (commit, status string, revisionURL *url.URL, err error) {
 
 	// Create a new AWS session
-	awsSession := session.Must(session.NewSession())
+	if awsSession == nil {
+		awsSession = session.Must(session.NewSession(&aws.Config{
+			Region: aws.String(config.AWSRegion),
+		}))
+	}
 
 	// Start a new CodePipeline service
 	pipeline := codepipeline.New(awsSession)
@@ -185,6 +235,23 @@ func getCommit(pipelineName, executionID string) (commit, status string, revisio
 	}
 
 	return
+}
+
+// decodeString uses AWS Key Management Service (AWS KMS) to decrypt environment variables.
+// In order for this method to work, the function needs access to the kms:Decrypt capability.
+func decodeString(kmsSvc *kms.KMS, payload string) (string, error) {
+	sDec, err := base64.StdEncoding.DecodeString(payload)
+	if err != nil {
+		return "", err
+	}
+
+	var out *kms.DecryptOutput
+	if out, err = kmsSvc.Decrypt(&kms.DecryptInput{
+		CiphertextBlob: sDec,
+	}); err != nil {
+		return "", err
+	}
+	return string(out.Plaintext), err
 }
 
 // Start the lambda event handler

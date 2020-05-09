@@ -100,10 +100,11 @@ bench:  ## Run all benchmarks in the Go application
 build: ## Build the lambda function as a compiled application
 	@go build -o releases/$(STATUS_BINARY)/$(STATUS_BINARY) .
 
-clean: ## Remove previous builds and any test cache data
+clean: ## Remove previous builds, test cache, and packaged releases
 	@go clean -cache -testcache -i -r
 	@if [ -d $(DISTRIBUTIONS_DIR) ]; then rm -r $(DISTRIBUTIONS_DIR); fi
 	@if [ -d $(RELEASES_DIR) ]; then rm -r $(RELEASES_DIR); fi
+	@rm -rf $(TEMPLATE_PACKAGED)
 
 clean-mods: ## Remove all the Go mod cache
 	@go clean -modcache
@@ -112,7 +113,7 @@ coverage: ## Shows the test coverage
 	@go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 
 create-secret: ## Creates an secret into AWS SecretsManager
-	# Example: create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
+	@# Example: create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
 	@test "$(name)"
 	@test "$(description)"
 	@test "$(secret_value)"
@@ -136,6 +137,7 @@ deploy: ## Build, prepare and deploy
         RepoOwner=$(REPO_OWNER) \
         RepoName=$(REPO_NAME) \
         RepoBranch=$(REPO_BRANCH) \
+        EncryptionKeyID=/$(APPLICATION_STAGE_NAME)/global/kms_key_id \
         --capabilities "CAPABILITY_IAM" \
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
@@ -180,13 +182,13 @@ run: ## Fires the lambda function (IE: run event=started)
 	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW)
 
 save-param: ## Saves a plain-text string parameter in SSM
-	# Example: save-param param_name='test' param_value='This is a test'
+	@# Example: save-param param_name='test' param_value='This is a test'
 	@test "$(param_value)"
 	@test "$(param_name)"
 	@aws ssm put-parameter --name "$(param_name)" --value "$(param_value)" --type String --overwrite
 
 save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
-	# Example: save-param-encrypted param_name='test' param_value='This is a test' kms_key_id=b329...
+	@# Example: save-param-encrypted param_name='test' param_value='This is a test' kms_key_id=b329...
 	@test "$(param_value)"
 	@test "$(param_name)"
 	@test $(kms_key_id)
@@ -201,13 +203,14 @@ save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
                   --plaintext "$(param_value)") \
 
 save-token: ## Helper for saving a new Github token to Secrets Manager
-	# Example: save-token token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
+	@# Example: save-token token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
 	@test $(token)
 	@test $(kms_key_id)
+	@$(eval encrypted := $(shell aws kms encrypt --output text --query CiphertextBlob --key-id $(kms_key_id) --plaintext $(token)))
 	@$(MAKE) create-secret \
           name=$(APPLICATION_STAGE_NAME)/github \
           description='Github access token for status updates' \
-          secret_value="{\"status_personal_token\":\"$(token)\"}" \
+          secret_value='{\"status_personal_token\":\"$(token)\",\"status_personal_token_encrypted\":\"$(encrypted)\"}' \
           kms_key_id=$(kms_key_id)  \
 
 tag: ## Generate a new tag and push (IE: tag version=0.0.0)
@@ -254,10 +257,10 @@ update-releaser:  ## Update the goreleaser application
 	@brew upgrade goreleaser
 
 update-secret: ## Updates an existing secret in AWS SecretsManager
-	# Example: update-secret name='production/test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}'
+	@# Example: update-secret name='production/test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}'
 	@test "$(name)"
 	@test "$(secret_value)"
-	aws secretsmanager update-secret \
+	@aws secretsmanager update-secret \
 		--secret-id "$(name)" \
 		--secret-string "$(secret_value)" \
 

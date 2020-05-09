@@ -41,13 +41,30 @@ make run
 ### Deployment & Hosting
 This repository has CI integration using [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
 
-Deploying to the `master` branch will automatically sync the code to [AWS Lambda](https://aws.amazon.com/lambda/).
+Deploying to the `master` branch will automatically start the process of shipping the code to [AWS Lambda](https://aws.amazon.com/lambda/).
 
 Any changes to the environment via the [AWS CloudFormation template](application.yaml) will be applied.
-
 The actual build process can be found in the [buildspec.yml](buildspec.yml) file.
 
-The app relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) to store environment variables.
+The application relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) and [SSM](https://aws.amazon.com/systems-manager/features/) to store environment variables.
+
+<details>
+<summary><strong><code>Create Environment Keys (AWS)</code></strong></summary>
+
+If you already have KMS keys for encrypting environment variables, you can skip this step.
+
+**1)** Create a [`KMS Key`](https://console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys) per `<stage>` for your application(s):
+```text
+Example:
+name = <stage>EnvironmentVars
+description = "Encryption key for <stage> environment variables"
+```
+
+**2)** Store the [`KMS Key ID`](https://console.aws.amazon.com/kms/home?region=us-east-1#/kms/keys) in [SSM](https://aws.amazon.com/systems-manager/features/) for global use
+```shell script
+make save-param param_name=/<stage>/global/kms_key_id param_value=<your_kms_key_id>
+```
+</details>
 
 <details>
 <summary><strong><code>Create New Hosting Environment (AWS)</code></strong></summary>
@@ -65,7 +82,11 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-**1)** Add your Github token to [Secrets Manager](https://aws.amazon.com/secrets-manager/) _(Only once per stage)_
+The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/).
+To be able to decrypt the `token` at runtime, the Lambda function will need permission to 
+access the KMS Key with the KeyID specified in `/<stage>/global/kms_key_id`
+
+**1)** Add your Github personal access token _(Only once per stage)_
 ```shell script
 make save-token token=YOUR_GITHUB_TOKEN  kms_key_id=YOUR_KMS_KEY_ID  APPLICATION_STAGE_NAME=production
 ```
@@ -133,7 +154,7 @@ List of all current commands:
 all                            Run lint, test and vet
 bench                          Run all benchmarks in the Go application
 build                          Build the lambda function as a compiled application
-clean                          Remove previous builds and any test cache data
+clean                          Remove previous builds, test cache, and packaged releases
 clean-mods                     Remove all the Go mod cache
 coverage                       Shows the test coverage
 create-secret                  Creates an secret into AWS SecretsManager
