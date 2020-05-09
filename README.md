@@ -37,7 +37,7 @@ cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 <details>
 <summary><strong><code>Setup to run locally</code></strong></summary>
 
-**1)** Update the [event json](events/started-event.json) to a recent pipeline execution and pipeline name
+**1)** Modify the [event json](events/started-event.json) to a recent pipeline execution and pipeline name
 ```json
 "detail": {
   "pipeline": "your-pipeline-name",
@@ -45,7 +45,7 @@ cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 }
 ```
 
-**2)** Update the [local-env.json] file with your Github Personal Access Token
+**2)** Modify the [local-env.json](local-env.json) file with your Github Personal Access Token
 ```json
 "StatusFunction": {
   "GITHUB_ACCESS_TOKEN": "your-token-goes-here"
