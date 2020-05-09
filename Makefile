@@ -13,14 +13,19 @@ ifndef APPLICATION_BUCKET
 	override APPLICATION_BUCKET="cloudformation-distribution-raw-files"
 endif
 
-## Cloud formation stack name (combines the app name with the stage for unique stacks)
+## Application name (the name of the application, lowercase, no spaces)
 ifndef APPLICATION_NAME
-	override APPLICATION_NAME="codepipeline-to-github-$(APPLICATION_STAGE_NAME)"
+	override APPLICATION_NAME="codepipeline-to-github"
+endif
+
+## Cloud formation stack name (combines the app name with the stage for unique stacks)
+ifndef APPLICATION_STACK_NAME
+	override APPLICATION_STACK_NAME="$(APPLICATION_NAME)-$(APPLICATION_STAGE_NAME)"
 endif
 
 ## S3 prefix to store the distribution files
 ifndef APPLICATION_BUCKET_PREFIX
-	override APPLICATION_BUCKET_PREFIX=$(APPLICATION_NAME)
+	override APPLICATION_BUCKET_PREFIX=$(APPLICATION_STACK_NAME)
 endif
 
 ## Default region for the application
@@ -65,9 +70,9 @@ ifdef HAS_GIT
 	VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
 endif
 
-## Not defined? Use default repo name
+## Not defined? Use default repo name which is the application
 ifeq ($(REPO_NAME),)
-	REPO_NAME="codepipeline-to-github"
+	REPO_NAME=$(APPLICATION_NAME)
 endif
 
 ## Not defined? Use default repo owner
@@ -138,9 +143,10 @@ deploy: ## Build, prepare and deploy
 	@$(MAKE) package
 	@sam deploy \
         --template-file $(TEMPLATE_PACKAGED) \
-        --stack-name $(APPLICATION_NAME)  \
+        --stack-name $(APPLICATION_STACK_NAME)  \
         --region $(AWS_REGION) \
         --parameter-overrides ApplicationName=$(APPLICATION_NAME) \
+        ApplicationStackName=$(APPLICATION_STACK_NAME) \
         ApplicationStageName=$(APPLICATION_STAGE_NAME) \
         ApplicationBucket=$(APPLICATION_BUCKET) \
         ApplicationBucketPrefix=$(APPLICATION_BUCKET_PREFIX) \
@@ -243,8 +249,8 @@ tag-update: ## Update an existing tag to current commit (IE: tag-update version=
 	@git fetch --tags -f
 
 teardown: ## Deletes the entire stack
-	@test $(APPLICATION_NAME)
-	@aws cloudformation delete-stack --stack-name $(APPLICATION_NAME)
+	@test $(APPLICATION_STACK_NAME)
+	@aws cloudformation delete-stack --stack-name $(APPLICATION_STACK_NAME)
 
 test: ## Runs vet, lint and ALL tests
 	@$(MAKE) vet

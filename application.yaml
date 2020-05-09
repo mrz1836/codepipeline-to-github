@@ -14,6 +14,14 @@ Parameters:
     MaxLength: 64
     ConstraintDescription: 'must be a valid application name'
 
+  ApplicationStackName:
+    Description: 'used to create the name of the stack in cloud formation'
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-_]*'
+    MinLength: 3
+    MaxLength: 64
+    ConstraintDescription: 'must be a valid application stack name'
+
   ApplicationStageName:
     Description: 'used for the de-coupling based on environment (IE: production)'
     Type: String
@@ -65,7 +73,7 @@ Parameters:
 # More info about MetaData: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-publishing-applications-metadata-properties.html
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: !Ref ApplicationName
+    Name: !Ref ApplicationStackName
     Description: 'Update a GitHub commit status via CodePipeline events'
     Author: MrZ
     #ReadmeUrl: README.md
@@ -93,7 +101,7 @@ Resources:
   StatusFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Ref ApplicationName  # Change to "status" ?
+      FunctionName: !Ref ApplicationStackName
       CodeUri: releases/status/.
       Handler: status
       Policies:
@@ -129,7 +137,7 @@ Resources:
     DependsOn:
       - CodeBuildProject
     Properties:
-      Name: !Sub "${ApplicationName}-deployment"
+      Name: !Sub "${ApplicationStackName}-deployment"
       ArtifactStore:
         Type: S3
         Location: !Ref ApplicationBucket
@@ -154,7 +162,7 @@ Resources:
                 Repo: !Ref RepoName
                 Branch: !Ref RepoBranch
                 PollForSourceChanges: false
-                OAuthToken: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token}}'
+                OAuthToken: !Sub "{{resolve:secretsmanager:${ApplicationStageName}/github:SecretString:status_personal_token}}"
         - Name: Build
           Actions:
             - Name: Build-and-Deploy-Stack
@@ -174,7 +182,7 @@ Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub "${ApplicationName}-build-deploy"
+      Name: !Sub "${ApplicationStackName}-build-deploy"
       ServiceRole: !Ref CodeBuildRole
       Artifacts:
         Type: CODEPIPELINE
@@ -189,6 +197,9 @@ Resources:
           - Name: APPLICATION_NAME
             Type: PLAINTEXT
             Value: !Ref ApplicationName
+          - Name: APPLICATION_STACK_NAME
+            Type: PLAINTEXT
+            Value: !Ref ApplicationStackName
           - Name: APPLICATION_BUCKET
             Type: PLAINTEXT
             Value: !Ref ApplicationBucket
@@ -209,7 +220,7 @@ Resources:
             Value: !Ref RepoBranch
           - Name: GITHUB_ACCESS_TOKEN
             Type: PLAINTEXT
-            Value: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token_encrypted}}'
+            Value: !Sub "{{resolve:secretsmanager:${ApplicationStageName}/github:SecretString:status_personal_token_encrypted}}"
       Source:
         Type: CODEPIPELINE
         BuildSpec: "buildspec.yml"
@@ -223,7 +234,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: '{{resolve:secretsmanager:production/github:SecretString:status_personal_token}}'
+        SecretToken: !Sub "{{resolve:secretsmanager:${ApplicationStageName}/github:SecretString:status_personal_token}}"
       RegisterWithThirdParty: 'true'
       Filters:
         - JsonPath: "$.ref"
