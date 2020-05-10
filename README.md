@@ -272,10 +272,9 @@ Read more about this Go project's [code standards](CODE_STANDARDS.md).
 <br/>
 
 ## Contributing
+View the [contributing guidelines](CONTRIBUTING.md) and please follow the [code of conduct](CODE_OF_CONDUCT.md).
 
-View the [contributing guidelines](CONTRIBUTING.md) and follow the [code of conduct](CODE_OF_CONDUCT.md).
-
-### How can I help ?
+### How can I help?
 All kinds of contributions are welcome :raised_hands:! 
 The most basic way to show your support is to star :star2: the project, or to raise issues :speech_balloon:. 
 You can also support this project by [becoming a sponsor on GitHub](https://github.com/sponsors/mrz1836) :clap: 
