@@ -260,6 +260,7 @@ func getArtifact(executionOutput *codepipeline.GetPipelineExecutionOutput) (sour
 
 // Start the lambda event handler
 func main() {
+
 	// Create a new AWS session
 	if awsSession == nil {
 		awsSession = session.Must(session.NewSession(&aws.Config{
