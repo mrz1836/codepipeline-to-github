@@ -37,6 +37,7 @@ cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 
 <details>
 <summary><strong><code>Setup to run locally</code></strong></summary>
+<br/>
 
 **1)** Modify the [event json](events/started-event.json) to a recent pipeline execution and pipeline name
 ```json
@@ -53,7 +54,7 @@ cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 }
 ``` 
 
-**3)** Finally, run the handler which should produce `null` as a success
+**3)** Finally, run the handler which should produce `null` and the commit status should be updated
 ```shell script
 make run event="started"
 ``` 
@@ -76,8 +77,7 @@ The default stage is `production` if you do not specified.
 
 <details>
 <summary><strong><code>Create Environment Encryption Key(s) (AWS)</code></strong></summary>
-
-<br/><br/>
+<br/>
 
 Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment variables
 ```shell script
@@ -90,6 +90,7 @@ This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-m
 
 <details>
 <summary><strong><code>Manage Environment Secrets (AWS)</code></strong></summary>
+<br/>
 
 The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/).
 
@@ -101,6 +102,7 @@ make save-secrets token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLI
 
 <details>
 <summary><strong><code>Create New CI & Hosting Environment (AWS)</code></strong></summary>
+<br/>
 
 <img src=".github/IMAGES/infrastructure-diagram.png" alt="infrastructure diagram" height="400" />
 
@@ -131,6 +133,7 @@ If you make any adjustments to the command above, update the [buildspec](buildsp
 
 <details>
 <summary><strong><code>Tear Down CI & Hosting Environment (AWS)</code></strong></summary>
+<br/>
 
 Remove the Stack(s)
 ```shell script
@@ -145,6 +148,7 @@ make teardown APPLICATION_STAGE_NAME="development"
 
 <details>
 <summary><strong><code>Lambda Logging</code></strong></summary>
+<br/>
 
 View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups) via log groups:
 ```text
@@ -169,6 +173,7 @@ make run event="failed"
 
 <details>
 <summary><strong><code>Library Deployment</code></strong></summary>
+<br/>
 
 [goreleaser](https://github.com/goreleaser/goreleaser) for easy binary or library deployment to Github and can be installed via: `brew install goreleaser`.
 
@@ -179,6 +184,7 @@ Use `make release-snap` to create a snapshot version of the release, and finally
 
 <details>
 <summary><strong><code>Makefile Commands</code></strong></summary>
+<br/>
 
 View all `makefile` commands
 ```shell script
