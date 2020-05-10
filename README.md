@@ -77,12 +77,12 @@ The default stage is `production` if you do not specified.
 <details>
 <summary><strong><code>Create Environment Encryption Key(s) (AWS)</code></strong></summary>
 
-> If you already have KMS keys for encrypting environment variables, you can skip this step.
+<br/><br/>
 
 Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment variables
 ```shell script
 make create-env-key APPLICATION_STAGE_NAME="<stage>"
-```  
+```
 
 This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-manager/features/): `/<application>/<stage>/kms_key_id` 
 
