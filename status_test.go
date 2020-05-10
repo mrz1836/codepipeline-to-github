@@ -201,13 +201,22 @@ func (m *mockCodePipelineClient) GetPipelineExecution(input *codepipeline.GetPip
 		})
 	}
 
+	defaultStatus := aws.String("InProgress")
+
+	// Change the status
+	if aws.StringValue(input.PipelineName) == "status-succeed" {
+		defaultStatus = aws.String("Succeeded")
+	} else if aws.StringValue(input.PipelineName) == "status-fail" {
+		defaultStatus = aws.String("Failure")
+	}
+
 	// Create a valid execution output
 	output := &codepipeline.GetPipelineExecutionOutput{
 		PipelineExecution: &codepipeline.PipelineExecution{
 			ArtifactRevisions:   artifacts,
 			PipelineExecutionId: input.PipelineExecutionId,
 			PipelineName:        aws.String("some-pipeline"),
-			Status:              aws.String("InProgress"),
+			Status:              defaultStatus,
 		},
 	}
 
@@ -242,6 +251,22 @@ func TestGetExecutionOutput(t *testing.T) {
 	_, err = getExecutionOutput("nil", "12345", mockPipeline)
 	if err == nil {
 		t.Fatal("error should not have occurred")
+	}
+
+	// Test a status:succeeded
+	response, err = getExecutionOutput("status-succeed", "12345", mockPipeline)
+	if err != nil {
+		t.Fatal("error occurred", err.Error())
+	} else if aws.StringValue(response.PipelineExecution.Status) != "Succeeded" {
+		t.Fatal("status was not as expected", aws.StringValue(response.PipelineExecution.Status))
+	}
+
+	// Test a status:failure
+	response, err = getExecutionOutput("status-fail", "12345", mockPipeline)
+	if err != nil {
+		t.Fatal("error occurred", err.Error())
+	} else if aws.StringValue(response.PipelineExecution.Status) != "Failure" {
+		t.Fatal("status was not as expected", aws.StringValue(response.PipelineExecution.Status))
 	}
 }
 
@@ -338,6 +363,7 @@ func TestLoadConfiguration(t *testing.T) {
 
 	os.Clearenv()
 
+	// Invalid - missing region
 	err := loadConfiguration(mockKms)
 	if err == nil {
 		t.Fatal("error should have occurred")
@@ -345,8 +371,8 @@ func TestLoadConfiguration(t *testing.T) {
 		t.Error("error returned was not as expected", err.Error())
 	}
 
+	// Invalid - missing github token
 	_ = os.Setenv("AWS_REGION", "us-east-1")
-
 	err = loadConfiguration(mockKms)
 	if err == nil {
 		t.Fatal("error should have occurred")
@@ -354,8 +380,8 @@ func TestLoadConfiguration(t *testing.T) {
 		t.Error("error returned was not as expected", err.Error())
 	}
 
+	// Invalid - missing application stage
 	_ = os.Setenv("GITHUB_ACCESS_TOKEN", "1234567")
-
 	err = loadConfiguration(mockKms)
 	if err == nil {
 		t.Fatal("error should have occurred")
@@ -363,11 +389,23 @@ func TestLoadConfiguration(t *testing.T) {
 		t.Error("error returned was not as expected", err.Error())
 	}
 
-	_ = os.Setenv("APPLICATION_STAGE_NAME", "testing")
+	// Invalid - token is not base64
+	_ = os.Setenv("APPLICATION_STAGE_NAME", "development")
+	err = loadConfiguration(mockKms)
+	if err == nil {
+		t.Fatal("error should have occurred")
+	} else if err.Error() != "illegal base64 data at input byte 4" {
+		t.Fatal("missing token value")
+	}
+
+	// Valid base64 value
+	_ = os.Setenv("GITHUB_ACCESS_TOKEN", "dGVzdC10b2tlbi12YWx1ZQ==")
 	err = loadConfiguration(mockKms)
 	if err != nil {
 		t.Fatal("error occurred", err.Error())
 	} else if len(config.GithubAccessToken) == 0 {
 		t.Fatal("missing token value")
+	} else if config.GithubAccessToken != "some-encrypted-text" {
+		t.Fatal("invalid token value", config.GithubAccessToken)
 	}
 }
