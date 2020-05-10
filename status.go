@@ -1,5 +1,7 @@
 /*
 Package main is the CodePipeline status event receiver
+
+More information: https://github.com/mrz1836/codepipeline-to-github
 */
 package main
 

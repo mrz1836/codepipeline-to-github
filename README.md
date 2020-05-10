@@ -6,7 +6,6 @@
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
 [![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
 [![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
-[![GoDoc](https://godoc.org/github.com/mrz1836/codepipeline-to-github?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/codepipeline-to-github)
 
 <br/>
 

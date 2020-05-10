@@ -150,7 +150,7 @@ create-secret: ## Creates an secret into AWS SecretsManager
 		--name "$(name)" \
 		--description "$(description)" \
 		--kms-key-id $(kms_key_id) \
-		--secret-string "$(secret_value)" \
+		--secret-string "$(secret_value)"
 
 decrypt: ## Encrypts data using a KMY Key ID
 	@# Example: make decrypt decrypt_value=AQICAHgrSMx+3O7...
@@ -204,7 +204,7 @@ package: ## Process the CF template and prepare for deployment
         --output-template-file $(TEMPLATE_PACKAGED) \
         --s3-bucket $(APPLICATION_BUCKET) \
         --s3-prefix $(APPLICATION_BUCKET_PREFIX) \
-        --region $(AWS_REGION);
+        --region $(AWS_REGION)
 
 release: ## Full production release (creates release in Github)
 	@goreleaser --rm-dist
@@ -219,7 +219,11 @@ release-snap: ## Test the full release (build binaries)
 run: ## Fires the lambda function (IE: run event=started)
 	@$(MAKE) lambda
 	@if [ "$(event)" = "" ]; then echo $(eval event += started); fi
-	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW) --env-vars $(LOCAL_ENV_FILE)
+	@sam local invoke StatusFunction \
+		--force-image-build \
+		-e events/$(event)-event.json \
+		--template $(TEMPLATE_RAW) \
+		--env-vars $(LOCAL_ENV_FILE)
 
 save-param: ## Saves a plain-text string parameter in SSM
 	@# Example: make save-param param_name='test' param_value='This is a test'
@@ -236,7 +240,7 @@ save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
        --type String  \
        --overwrite  \
        --name "$(param_name)" \
-       --value "$(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(param_value)")" \
+       --value "$(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(param_value)")"
 
 save-secrets: ## Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
 	@# Example: make save-secrets token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
@@ -307,7 +311,7 @@ update-secret: ## Updates an existing secret in AWS SecretsManager
 	@test "$(secret_value)"
 	@aws secretsmanager update-secret \
 		--secret-id "$(name)" \
-		--secret-string "$(secret_value)" \
+		--secret-string "$(secret_value)"
 
 vet: ## Run the Go vet application
 	@go vet -v ./...
