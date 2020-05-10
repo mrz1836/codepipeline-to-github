@@ -11,7 +11,7 @@
 <br/>
 
 ## Table of Contents
-- [TLDR](#tldr)
+- [TL;DR](#tldr)
 - [Installation](#installation)
 - [Deployment & Hosting](#deployment--hosting)
 - [Documentation](#documentation)
@@ -23,9 +23,9 @@
 
 <br/>
 
-## TLDR;
-[AWS CodePipeline](https://aws.amazon.com/codepipeline/) _does not provide_ an easy way to update Github commit statuses _(at this time)_. Launch this serverless application and 
-immediately start updating commits when pipeline events occur. All you need is a [Github personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and some [AWS credentials](#prerequisites).
+## TL;DR
+[AWS CodePipeline](https://aws.amazon.com/codepipeline/) lacks an easy way to update Github commit statuses _(at this time)_. Launch this serverless application and 
+immediately start updating commits as pipeline events occur. All you need is a [Github personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and some [AWS credentials](#prerequisites).
 
 <br/>
 
