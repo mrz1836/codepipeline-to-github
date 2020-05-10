@@ -21,12 +21,13 @@
 ## Installation
 
 #### Prerequisites
-- [An AWS account](https://aws.amazon.com/)
-- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
-- [Golang](https://golang.org/doc/install)
-- [Docker](https://docs.docker.com/install)
-- [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html)
-
+- [An AWS account](https://aws.amazon.com/) 
+    - _Running functions locally_ requires permission to: [CodePipeline](https://aws.amazon.com/kms/) and [KMS](https://aws.amazon.com/kms/)
+    - _Deploying_ requires permission to: [KMS](https://aws.amazon.com/kms/), [SSM](https://aws.amazon.com/systems-manager/features/), [Secrets Manager](https://aws.amazon.com/secrets-manager/) and [Cloud Formation](https://aws.amazon.com/cloudformation/)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/installing.html) _(`brew install awscli`)_
+- [Golang](https://golang.org/doc/install) _(`brew install go`)_
+- [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html) _(`brew tap aws/tap && brew install aws-sam-cli`)_
+    - Running functions locally requires: [Docker](https://docs.docker.com/install)
 
 Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
@@ -71,15 +72,13 @@ and [AWS SSM](https://aws.amazon.com/systems-manager/features/) to store environ
 Sensitive environment variables are encrypted using [AWS KMS](https://aws.amazon.com/kms/) and then decrypted at runtime.
 
 <details>
-<summary><strong><code>Create Environment Keys (AWS)</code></strong></summary>
+<summary><strong><code>Create Environment Encryption Key(s) (AWS)</code></strong></summary>
 
 > If you already have KMS keys for encrypting environment variables, you can skip this step.
 
-**1)** Create a `KMS Key` per `<stage>` for your application(s):
+**1)** Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment variables
 ```shell script
 make create-env-key APPLICATION_STAGE_NAME="<stage>"
-
-"Saved parameter: /codepipeline-to-github/staging/kms_key_id with key id: 123456-123-123-123-123456"
 ``` 
 This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-manager/features/): `/<application>/<stage>/kms_key_id` 
 </details>
