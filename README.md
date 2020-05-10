@@ -76,15 +76,28 @@ Sensitive environment variables are encrypted using [AWS KMS](https://aws.amazon
 
 > If you already have KMS keys for encrypting environment variables, you can skip this step.
 
-**1)** Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment variables
+Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment variables
 ```shell script
 make create-env-key APPLICATION_STAGE_NAME="<stage>"
-``` 
+```  
+
 This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-manager/features/): `/<application>/<stage>/kms_key_id` 
+
 </details>
 
 <details>
-<summary><strong><code>Create New Hosting Environment (AWS)</code></strong></summary>
+<summary><strong><code>Manage Environment Secrets (AWS)</code></strong></summary>
+
+The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/).
+
+Add or update your Github personal access token
+```shell script
+make save-secrets token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLICATION_STAGE_NAME="<stage>"
+```
+</details>
+
+<details>
+<summary><strong><code>Create New CI & Hosting Environment (AWS)</code></strong></summary>
 
 <img src=".github/IMAGES/infrastructure-diagram.png" alt="infrastructure diagram" height="400" />
 
@@ -99,14 +112,7 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/).
-
-**1)** Add your Github personal access token _(Only once per stage)_
-```shell script
-make save-secrets token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLICATION_STAGE_NAME="<stage>"
-```
-
-**2)** One command will build, test, package and deploy the application to AWS. 
+One command will build, test, package and deploy the application to AWS. 
 After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
@@ -121,7 +127,7 @@ If you make any adjustments to the command above, update the [buildspec](buildsp
 </details>
 
 <details>
-<summary><strong><code>Tear Down Hosting Environment (AWS)</code></strong></summary>
+<summary><strong><code>Tear Down CI & Hosting Environment (AWS)</code></strong></summary>
 
 Remove the Stack(s)
 ```shell script
