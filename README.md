@@ -1,11 +1,11 @@
 # CodePipeline → Lambda → Github
 > Update a GitHub commit status via CodePipeline events
 
-[![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
+[![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?logo=github&style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
 [![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
 [![Build Status](https://travis-ci.com/mrz1836/codepipeline-to-github.svg?branch=master&v=3)](https://travis-ci.com/mrz1836/codepipeline-to-github)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
-[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github?logo=go&v=3)](https://golang.org/)
+[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github?v=3)](https://golang.org/)
 [![Sponsor](https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat&v=3)](https://github.com/sponsors/mrz1836)
 [![Donate](https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat)](https://mrz1818.com/?tab=tips&af=codepipeline-to-github)
 
@@ -278,8 +278,8 @@ View the [contributing guidelines](CONTRIBUTING.md) and follow the [code of cond
 ### How can I help ?
 All kinds of contributions are welcome :raised_hands:! 
 The most basic way to show your support is to star :star2: the project, or to raise issues :speech_balloon:. 
-You can also support this project by [**becoming a sponsor on GitHub**](https://github.com/sponsors/mrz1836) :clap: 
-or by making a [donation](https://mrz1818.com/?tab=tips&af=codepipeline-to-github) to ensure this journey continues indefinitely! :rocket:
+You can also support this project by [becoming a sponsor on GitHub](https://github.com/sponsors/mrz1836) :clap: 
+or by making a [**bitcoin donation**](https://mrz1818.com/?tab=tips&af=codepipeline-to-github) to ensure this journey continues indefinitely! :rocket:
 
 ### Credits
 This application would not be possible without the work provided in these repositories: 
