@@ -16,6 +16,8 @@ import (
 // TestProcessEvent will test the ProcessEvent() method
 func TestProcessEvent(t *testing.T) {
 
+	os.Clearenv()
+
 	// Create a new AWS session
 	if awsSession == nil {
 		awsSession = session.Must(session.NewSession(&aws.Config{
@@ -72,7 +74,7 @@ func TestProcessEvent(t *testing.T) {
 		if err == nil {
 			t.Fatal("expected error")
 		} else if err.Error() != "required key AWS_REGION missing value" {
-			t.Fatal("error expected was not the same")
+			t.Fatal("error expected was not the same", err.Error())
 		}
 	})
 
@@ -88,7 +90,7 @@ func TestProcessEvent(t *testing.T) {
 		if err == nil {
 			t.Fatal("expected error")
 		} else if err.Error() != "required key APPLICATION_STAGE_NAME missing value" {
-			t.Fatal("error expected was not the same")
+			t.Fatal("error expected was not the same", err.Error())
 		}
 	})
 
