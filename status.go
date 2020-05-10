@@ -160,11 +160,6 @@ func loadConfiguration(kmsSvc kmsiface.KMSAPI) (err error) {
 		return
 	}
 
-	// There should be a value at this point
-	if len(config.GithubAccessToken) == 0 {
-		return errors.New("missing access token")
-	}
-
 	// Skip KMS on testing stage
 	if config.Stage == stageTesting {
 		return
