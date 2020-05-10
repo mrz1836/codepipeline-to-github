@@ -133,6 +133,11 @@ Remove the Stack(s)
 ```shell script
 make teardown
 ```   
+
+_(Example)_ Teardown another stage
+```shell script
+make teardown APPLICATION_STAGE_NAME="development"
+``` 
 </details>
 
 <details>
@@ -154,7 +159,7 @@ The [`status`](status.go) handler is composed of:
 - Post request to Github to notify the status change
 ``` 
 
-Run the status function with different [events](events)
+Run the status function with different pipeline [events](events)
 ```shell script
 make run event="failed"
 ``` 
