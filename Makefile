@@ -105,6 +105,11 @@ ifndef IAM_CAPABILITIES
 	override IAM_CAPABILITIES="CAPABILITY_IAM"
 endif
 
+## Set name/location for environment encryption key id
+ifndef PARAM_NAME_KMS_KEY_ID
+	override PARAM_NAME_KMS_KEY_ID="/$(APPLICATION_NAME)/$(APPLICATION_STAGE_NAME)/kms_key_id"
+endif
+
 .PHONY: test lint clean release lambda deploy
 
 all: test ## Run lint, test and vet
@@ -127,8 +132,16 @@ clean-mods: ## Remove all the Go mod cache
 coverage: ## Shows the test coverage
 	@go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 
+create-env-key: ## Creates a new key in KMS for a new stage
+	@ #Example: make create-key description="keys to encrypt environment variables"
+	@test $(APPLICATION_STAGE_NAME)
+	@$(eval kms_key_id := $(shell aws kms create-key --description "Used to encrypt environment variables for $(APPLICATION_NAME)" --query 'KeyMetadata.KeyId' --output text))
+	@aws kms create-alias --alias-name "alias/$(APPLICATION_NAME)/$(APPLICATION_STAGE_NAME)" --target-key-id $(kms_key_id)
+	@$(MAKE) save-param param_name="$(PARAM_NAME_KMS_KEY_ID)" param_value=$(kms_key_id)
+	@echo "Saved parameter: $(PARAM_NAME_KMS_KEY_ID) with key id: $(kms_key_id)"
+
 create-secret: ## Creates an secret into AWS SecretsManager
-	@# Example: create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
+	@# Example: make create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
 	@test "$(name)"
 	@test "$(description)"
 	@test "$(secret_value)"
@@ -158,7 +171,7 @@ deploy: ## Build, prepare and deploy
         RepoOwner=$(REPO_OWNER) \
         RepoName=$(REPO_NAME) \
         RepoBranch=$(REPO_BRANCH) \
-        EncryptionKeyID=/$(APPLICATION_STAGE_NAME)/global/kms_key_id \
+        EncryptionKeyID=$(PARAM_NAME_KMS_KEY_ID) \
         --capabilities $(IAM_CAPABILITIES) \
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
@@ -229,7 +242,7 @@ save-secrets: ## Helper for saving Github token(s) to Secrets Manager (extendabl
 	@# Example: make save-secrets token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
 	@test $(token)
 	@test $(kms_key_id)
-	@$(eval existing_secret := $(shell aws secretsmanager describe-secret --secret-id "$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)"))
+	@$(eval existing_secret := $(shell aws secretsmanager describe-secret --secret-id "$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" --output text))
 	@$(eval token_encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(token)"))
 	@if [ '$(existing_secret)' = "" ]; then\
 		echo "Creating a new secret..."; \
