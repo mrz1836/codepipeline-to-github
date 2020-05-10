@@ -8,6 +8,8 @@
 [![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
 [![GoDoc](https://godoc.org/github.com/mrz1836/codepipeline-to-github?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/codepipeline-to-github)
 
+<br/>
+
 ## Table of Contents
 - [Installation](#installation)
 - [Deployment & Hosting](#deployment--hosting)
@@ -17,6 +19,8 @@
 - [Maintainers](#maintainers)
 - [Contributing](#contributing)
 - [License](#license)
+
+<br/>
 
 ## Installation
 
@@ -59,6 +63,8 @@ cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
 make run event="started"
 ``` 
 </details>
+
+<br/>
 
 ## Deployment & Hosting
 This repository has CI integration using [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
@@ -157,13 +163,13 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 </details>
 
 ## Documentation
-The [`status`](status.go) handler is composed of:
+The [`status`](status.go) handler does the following:
 ```text
 - Processes incoming CloudWatch events from CodePipeline
 - Decrypts environment variables (Github Token)
 - Gets the latest information from CodePipeline via an ExecutionID
-- Determine the Github status based on the Execution status
-- Post request to Github to notify the status change
+- Determines the Github status based on the Execution status
+- Initiates a http/post request to Github to update the commit status
 ``` 
 
 Run the status function with different pipeline [events](events)
@@ -172,7 +178,7 @@ make run event="failed"
 ``` 
 
 <details>
-<summary><strong><code>Library Deployment</code></strong></summary>
+<summary><strong><code>Release Deployment</code></strong></summary>
 <br/>
 
 [goreleaser](https://github.com/goreleaser/goreleaser) for easy binary or library deployment to Github and can be installed via: `brew install goreleaser`.
