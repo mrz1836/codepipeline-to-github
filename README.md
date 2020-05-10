@@ -71,6 +71,9 @@ The application relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-m
 and [AWS SSM](https://aws.amazon.com/systems-manager/features/) to store environment variables. 
 Sensitive environment variables are encrypted using [AWS KMS](https://aws.amazon.com/kms/) and then decrypted at runtime.
 
+Deploy different environments by changing the `<stage>` to `production` or `developement` as example.
+The default stage is `production` if you do not specified.
+
 <details>
 <summary><strong><code>Create Environment Encryption Key(s) (AWS)</code></strong></summary>
 
