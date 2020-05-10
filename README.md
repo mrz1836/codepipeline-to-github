@@ -11,6 +11,7 @@
 <br/>
 
 ## Table of Contents
+- [TLDR](#tldr)
 - [Installation](#installation)
 - [Deployment & Hosting](#deployment--hosting)
 - [Documentation](#documentation)
@@ -19,6 +20,12 @@
 - [Maintainers](#maintainers)
 - [Contributing](#contributing)
 - [License](#license)
+
+<br/>
+
+## TLDR;
+[AWS CodePipeline](https://aws.amazon.com/codepipeline/) _does not provide_ an easy way to update Github commit statuses _(at this time)_. Launch this serverless application and 
+immediately start updating commits when pipeline events occur. All you need is a [Github personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and some [AWS credentials](#prerequisites).
 
 <br/>
 
@@ -162,6 +169,8 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 ```
 </details>
 
+<br/>
+
 ## Documentation
 The [`status`](status.go) handler does the following:
 ```text
@@ -236,6 +245,8 @@ vet                            Run the Go vet application
 ```
 </details>
 
+<br/>
+
 ## Examples & Tests
 All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/codepipeline-to-github) and uses [Go version 1.14.x](https://golang.org/doc/go1.14). View the [deployment configuration file](.travis.yml).
 
@@ -244,14 +255,20 @@ Run all tests (including integration tests)
 make test
 ```
 
+<br/>
+
 ## Code Standards
 Read more about this Go project's [code standards](CODE_STANDARDS.md).
+
+<br/>
 
 ## Maintainers
 
 | [<img src="https://github.com/mrz1836.png" height="50" alt="MrZ" />](https://github.com/mrz1836) |
 |:---:|
 | [MrZ](https://github.com/mrz1836) |
+
+<br/>
 
 ## Contributing
 
@@ -267,6 +284,8 @@ This application would not be possible without the work provided in these reposi
 - [InfoPark's Github Status](https://github.com/infopark/lambda-codepipeline-github-status)
 - [Jenseickmeyer's Commit Status Bot](https://github.com/jenseickmeyer/github-commit-status-bot) 
 - [Rowanu's SAM Golang Starter](https://github.com/rowanu/sam-golang-starter) 
+
+<br/>
 
 ## License
 
