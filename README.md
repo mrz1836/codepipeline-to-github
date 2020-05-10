@@ -1,11 +1,11 @@
 # CodePipeline → Lambda → Github
 > Update a GitHub commit status via CodePipeline events
 
-[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github)](https://golang.org/)
+[![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
+[![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
 [![Build Status](https://travis-ci.com/mrz1836/codepipeline-to-github.svg?branch=master&v=3)](https://travis-ci.com/mrz1836/codepipeline-to-github)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
-[![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
-[![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
+[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github)](https://golang.org/)
 [![Sponsor](https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat&v=3)](https://github.com/sponsors/mrz1836)
 [![Donate](https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat)](https://mrz1818.com/?tab=tips&af=codepipeline-to-github)
 
