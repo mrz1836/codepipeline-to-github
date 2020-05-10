@@ -108,7 +108,7 @@ access the KMS Key with the KeyID specified in SSM: `/<stage>/global/kms_key_id`
 
 **1)** Add your Github personal access token _(Only once per stage)_
 ```shell script
-make save-token token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLICATION_STAGE_NAME="<stage>"
+make save-secrets token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLICATION_STAGE_NAME="<stage>"
 ```
 
 **2)** One command will build, test, package and deploy the application to AWS. 
@@ -199,7 +199,7 @@ release-snap                   Test the full release (build binaries)
 run                            Fires the lambda function (IE: run event=started)
 save-param                     Saves a plain-text string parameter in SSM
 save-param-encrypted           Saves an encrypted string value as a parameter in SSM
-save-token                     Helper for saving a new Github token to Secrets Manager
+save-secrets                   Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
 tag                            Generate a new tag and push (IE: tag version=0.0.0)
 tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
 tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)

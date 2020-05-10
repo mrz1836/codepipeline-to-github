@@ -100,6 +100,11 @@ ifndef LOCAL_ENV_FILE
 	override LOCAL_ENV_FILE=local-env.json
 endif
 
+## Set capabilities for the sam deploy option
+ifndef IAM_CAPABILITIES
+	override IAM_CAPABILITIES="CAPABILITY_IAM"
+endif
+
 .PHONY: test lint clean release lambda deploy
 
 all: test ## Run lint, test and vet
@@ -154,7 +159,7 @@ deploy: ## Build, prepare and deploy
         RepoName=$(REPO_NAME) \
         RepoBranch=$(REPO_BRANCH) \
         EncryptionKeyID=/$(APPLICATION_STAGE_NAME)/global/kms_key_id \
-        --capabilities "CAPABILITY_IAM" \
+        --capabilities $(IAM_CAPABILITIES) \
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
         --no-confirm-changeset
@@ -200,7 +205,7 @@ release-snap: ## Test the full release (build binaries)
 
 run: ## Fires the lambda function (IE: run event=started)
 	@$(MAKE) lambda
-	@if [ "$(event)" == "" ]; then echo $(eval event += started); fi
+	@if [ "$(event)" = "" ]; then echo $(eval event += started); fi
 	@sam local invoke StatusFunction --force-image-build -e events/$(event)-event.json --template $(TEMPLATE_RAW) --env-vars $(LOCAL_ENV_FILE)
 
 save-param: ## Saves a plain-text string parameter in SSM
@@ -220,16 +225,25 @@ save-param-encrypted: ## Saves an encrypted string value as a parameter in SSM
        --name "$(param_name)" \
        --value "$(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(param_value)")" \
 
-save-token: ## Helper for saving a new Github token to Secrets Manager
-	@# Example: make save-token token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
+save-secrets: ## Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
+	@# Example: make save-secrets token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
 	@test $(token)
 	@test $(kms_key_id)
-	@$(eval encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(token)"))
-	@$(MAKE) create-secret \
-          name=$(APPLICATION_STAGE_NAME)/github \
-          description='Github access token for status updates' \
-          secret_value='{\"status_personal_token\":\"$(token)\",\"status_personal_token_encrypted\":\"$(encrypted)\"}' \
-          kms_key_id=$(kms_key_id)  \
+	@$(eval existing_secret := $(shell aws secretsmanager describe-secret --secret-id "$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)"))
+	@$(eval token_encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(token)"))
+	@if [ '$(existing_secret)' = "" ]; then\
+		echo "Creating a new secret..."; \
+		$(MAKE) create-secret \
+			name="$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" \
+			description="Sensitive credentials for $(APPLICATION_NAME):$(APPLICATION_STAGE_NAME)" \
+			secret_value='{\"github_personal_token\":\"$(token)\",\"github_personal_token_encrypted\":\"$(token_encrypted)\"}' \
+			kms_key_id=$(kms_key_id);  \
+	else\
+		echo "Updating an existing secret..."; \
+		$(MAKE) update-secret \
+            name="$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" \
+        	secret_value='{\"github_personal_token\":\"$(token)\",\"github_personal_token_encrypted\":\"$(token_encrypted)\"}'; \
+	fi
 
 tag: ## Generate a new tag and push (IE: tag version=0.0.0)
 	@test $(version)
