@@ -98,7 +98,7 @@ Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment 
 make create-env-key APPLICATION_STAGE_NAME="<stage>"
 ```
 
-This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-manager/features/): `/<application>/<stage>/kms_key_id` 
+This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-manager/features/) located at: `/<application>/<stage>/kms_key_id` 
 
 </details>
 
@@ -106,7 +106,7 @@ This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-m
 <summary><strong><code>Manage Environment Secrets (AWS)</code></strong></summary>
 <br/>
 
-The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/).
+The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/)).
 
 Add or update your Github personal access token
 ```shell script
@@ -121,12 +121,12 @@ make save-secrets token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLI
 <img src=".github/IMAGES/infrastructure-diagram.png" alt="infrastructure diagram" height="400" />
 
 This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack with:
-- (1) [Lambda](https://aws.amazon.com/lambda/) Function(s)
+- (1) [Lambda](https://aws.amazon.com/lambda/) Function
 - (1) [CloudWatch Event Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/Create-CloudWatch-Events-Rule.html) to subscribe to Pipeline events
-- (1) [CloudWatch LogGroups](https://aws.amazon.com/cloudwatch/) for Lambda Function(s)
+- (1) [CloudWatch LogGroups](https://aws.amazon.com/cloudwatch/) for the Lambda function output
 - (1) [CodePipeline](https://aws.amazon.com/codepipeline/) with multiple stages to deploy the application from Github
 - (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive Github notifications from a specific `branch:name`
-- (1) [CodeBuild Project(s)](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
+- (1) [CodeBuild Project](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
 - (2) [Service Roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) for working with CodeBuild and CodePipeline
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
@@ -164,7 +164,7 @@ make teardown APPLICATION_STAGE_NAME="development"
 <summary><strong><code>Lambda Logging</code></strong></summary>
 <br/>
 
-View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups) via log groups:
+View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups) via Log Groups
 ```text
 /aws/lambda/<app_name>-<stage_name>
 ```
