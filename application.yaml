@@ -328,6 +328,7 @@ Resources:
                   - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:changeSet/*"
                   - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stackset/*"
                   - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}*"
+                  - !Sub "arn:aws:cloudformation:${AWS::Region}:aws:transform/Serverless*"
               - Effect: Allow
                 Action:
                   - lambda:Create*
