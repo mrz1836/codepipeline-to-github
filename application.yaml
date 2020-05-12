@@ -352,7 +352,6 @@ Resources:
                   - iam:Get*
                   - iam:Pass*
                 Resource:
-                  #- !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}"
                   - "*"
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
