@@ -121,9 +121,9 @@ make save-secrets token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLI
 <img src=".github/IMAGES/infrastructure-diagram.png" alt="infrastructure diagram" height="400" />
 
 This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack with:
-- (1) [Lambda](https://aws.amazon.com/lambda/) Function
+- (1) [Lambda](https://aws.amazon.com/lambda/) Function (Golang Runtime)
 - (1) [CloudWatch Event Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/Create-CloudWatch-Events-Rule.html) to subscribe to Pipeline events
-- (1) [CloudWatch LogGroups](https://aws.amazon.com/cloudwatch/) for the Lambda function output
+- (1) [CloudWatch LogGroup](https://aws.amazon.com/cloudwatch/) for the Lambda function output
 - (1) [CodePipeline](https://aws.amazon.com/codepipeline/) with multiple stages to deploy the application from Github
 - (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive Github notifications from a specific `branch:name`
 - (1) [CodeBuild Project](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
@@ -217,9 +217,10 @@ clean-mods                     Remove all the Go mod cache
 coverage                       Shows the test coverage
 create-env-key                 Creates a new key in KMS for a new stage
 create-secret                  Creates an secret into AWS SecretsManager
-decrypt                        Encrypts data using a KMY Key ID
+decrypt                        Decrypts data using a KMY Key ID (awscli v2)
+decrypt-deprecated             Decrypts data using a KMY Key ID (awscli v1)
 deploy                         Build, prepare and deploy
-encrypt                        Encrypts data using a KMY Key ID
+encrypt                        Encrypts data using a KMY Key ID (awscli v2)
 godocs                         Sync the latest tag with GoDocs
 help                           Show all commands available
 lambda                         Build a compiled version to deploy to Lambda

@@ -62,12 +62,15 @@ endif
 HAS_GIT := $(shell command -v git 2> /dev/null)
 
 ifdef HAS_GIT
-	## Automatically detect the repo owner and repo name (for local use with Git)
-	REPO_NAME=$(shell basename `git rev-parse --show-toplevel`)
-	REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
-
-	## Set the version (for go docs)
-	VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
+	## Do we have a repo?
+	HAS_REPO := "$(shell git rev-parse --show-toplevel)"
+	ifdef HAS_REPO
+		ifeq (,$(findstring "not a git repository",$(HAS_REPO)))
+			## Automatically detect the repo owner and repo name (for local use with Git)
+			REPO_NAME=$(shell basename "$(HAS_REPO)")
+			REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
+		endif
+	endif
 endif
 
 ## Not defined? Use default repo name which is the application
@@ -133,7 +136,7 @@ coverage: ## Shows the test coverage
 	@go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 
 create-env-key: ## Creates a new key in KMS for a new stage
-	@ #Example: make create-key description="keys to encrypt environment variables"
+	@ #Example: make create-env-key description="keys to encrypt environment variables"
 	@test $(APPLICATION_STAGE_NAME)
 	@$(eval kms_key_id := $(shell aws kms create-key --description "Used to encrypt environment variables for $(APPLICATION_NAME)" --query 'KeyMetadata.KeyId' --output text))
 	@aws kms create-alias --alias-name "alias/$(APPLICATION_NAME)/$(APPLICATION_STAGE_NAME)" --target-key-id $(kms_key_id)
@@ -152,10 +155,17 @@ create-secret: ## Creates an secret into AWS SecretsManager
 		--kms-key-id $(kms_key_id) \
 		--secret-string "$(secret_value)"
 
-decrypt: ## Encrypts data using a KMY Key ID
+decrypt: ## Decrypts data using a KMY Key ID (awscli v2)
 	@# Example: make decrypt decrypt_value=AQICAHgrSMx+3O7...
 	@test "$(decrypt_value)"
 	@aws kms decrypt --ciphertext-blob "$(decrypt_value)" --output text --query Plaintext | base64 --decode
+
+decrypt-deprecated: ## Decrypts data using a KMY Key ID (awscli v1)
+	@# Example: make decrypt decrypt_value=AQICAHgrSMx+3O7...
+	@test "$(decrypt_value)"
+	@echo $(decrypt_value) | base64 --decode >> tempfile
+	@aws kms decrypt --ciphertext-blob fileb://tempfile --output text --query Plaintext | base64 --decode
+	@rm -rf tempfile
 
 deploy: ## Build, prepare and deploy
 	@$(MAKE) package
@@ -171,13 +181,13 @@ deploy: ## Build, prepare and deploy
         RepoOwner=$(REPO_OWNER) \
         RepoName=$(REPO_NAME) \
         RepoBranch=$(REPO_BRANCH) \
-        EncryptionKeyID=$(PARAM_NAME_KMS_KEY_ID) \
+        EncryptionKeyId=$(PARAM_NAME_KMS_KEY_ID) \
         --capabilities $(IAM_CAPABILITIES) \
         --tags $(AWS_TAGS) \
         --no-fail-on-empty-changeset \
         --no-confirm-changeset
 
-encrypt: ## Encrypts data using a KMY Key ID
+encrypt: ## Encrypts data using a KMY Key ID (awscli v2)
 	@# Example make encrypt kms_key_id=b329... encrypt_value=YourSecret
 	@test $(kms_key_id)
 	@test "$(encrypt_value)"
