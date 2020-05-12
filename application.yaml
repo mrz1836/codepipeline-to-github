@@ -345,7 +345,7 @@ Resources:
                 Action:
                   - ssm:Get*
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ApplicationName}/{$ApplicationStageName}*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ApplicationName}/${ApplicationStageName}*"
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
   CodePipelineRole:
@@ -412,7 +412,8 @@ Resources:
                   - lambda:GetFunctionConfiguration
                   - lambda:InvokeFunction
                   - lambda:ListFunctions
-                Resource: "*"
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}"
                 Effect: Allow
               - Action:
                   - codebuild:BatchGetBuilds
