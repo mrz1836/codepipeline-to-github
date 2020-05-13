@@ -1,7 +1,7 @@
 # Common makefile commands & variables between projects
 include .make/Makefile.common
 
-# Golang makefile commands & variables between projects
+# Common Golang makefile commands & variables between projects
 include .make/Makefile.go
 
 # Common aws commands & variables between projects
@@ -113,10 +113,10 @@ lambda: ## Build a compiled version to deploy to Lambda
 	@$(MAKE) test
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
-release:: ## Full production release (creates release in Github and syncs to GoDocs)
+release:: ## Runs common.release and then runs godocs
 	@$(MAKE) godocs
 
-run: ## Fires the lambda function (IE: run event=started)
+run: ## Fires the lambda function (run event=started)
 	@$(MAKE) lambda
 	@if [ "$(event)" = "" ]; then echo $(eval event += started); fi
 	@sam local invoke StatusFunction \

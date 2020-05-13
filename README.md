@@ -213,41 +213,46 @@ make help
 
 List of all current commands:
 ```text
-all                            Run lint, test and vet
-bench                          Run all benchmarks in the Go application
-build                          Build the lambda function as a compiled application
-clean                          Remove previous builds, test cache, and packaged releases
-clean-mods                     Remove all the Go mod cache
-coverage                       Shows the test coverage
-create-env-key                 Creates a new key in KMS for a new stage
-create-secret                  Creates an secret into AWS SecretsManager
-decrypt                        Decrypts data using a KMY Key ID (awscli v2)
-decrypt-deprecated             Decrypts data using a KMY Key ID (awscli v1)
-deploy                         Build, prepare and deploy
-encrypt                        Encrypts data using a KMY Key ID (awscli v2)
-godocs                         Sync the latest tag with GoDocs
-help                           Show all commands available
-lambda                         Build a compiled version to deploy to Lambda
-lint                           Run the Go lint application
-package                        Process the CF template and prepare for deployment
-release                        Full production release (creates release in Github)
-release-test                   Full production test release (everything except deploy)
-release-snap                   Test the full release (build binaries)
-run                            Fires the lambda function (IE: run event=started)
-save-param                     Saves a plain-text string parameter in SSM
-save-param-encrypted           Saves an encrypted string value as a parameter in SSM
-save-secrets                   Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
-tag                            Generate a new tag and push (IE: tag version=0.0.0)
-tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
-tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
-teardown                       Deletes the entire stack
-test                           Runs vet, lint and ALL tests
-test-short                     Runs vet, lint and tests (excludes integration tests)
-test-travis                    Runs tests via Travis (also exports coverage)
-update                         Update all project dependencies
-update-releaser                Update the goreleaser application
-update-secret                  Updates an existing secret in AWS SecretsManager
-vet                            Run the Go vet application
+all                        Run lint, test and vet
+aws-param-certificate      Returns the ssm location for the domain ssl certificate id
+aws-param-zone             Returns the ssm location for the host zone id
+build                      Build the lambda function as a compiled application
+clean                      Remove previous builds, test cache, and packaged releases
+clean-mods                 Remove all the Go mod cache
+coverage                   Shows the test coverage
+create-env-key             Creates a new key in KMS for a new stage
+create-secret              Creates an secret into AWS SecretsManager
+decrypt                    Decrypts data using a KMY Key ID (awscli v2)
+decrypt-deprecated         Decrypts data using a KMY Key ID (awscli v1)
+deploy                     Build, prepare and deploy
+encrypt                    Encrypts data using a KMY Key ID (awscli v2)
+env-key-location           Returns the environment encryption key location
+godocs                     Sync the latest tag with GoDocs
+help                       Show this help message
+invalidate-cache           Invalidates a cloudfront cache based on path
+lambda                     Build a compiled version to deploy to Lambda
+lint                       Run the Go lint application
+package                    Process the CF template and prepare for deployment
+release                    Full production release (creates release in Github)
+release                    Runs common.release and then runs godocs
+release-snap               Test the full release (build binaries)
+release-test               Full production test release (everything except deploy)
+replace-version            Replaces the version in HTML/JS (pre-deploy)
+run                        Fires the lambda function (run event=started)
+save-domain-info           Saves the zone id and the ssl id for use by CloudFormation
+save-param                 Saves a plain-text string parameter in SSM
+save-param-encrypted       Saves an encrypted string value as a parameter in SSM
+save-secrets               Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
+tag                        Generate a new tag and push (tag version=0.0.0)
+tag-remove                 Remove a tag if found (tag-remove version=0.0.0)
+tag-update                 Update an existing tag to current commit (tag-update version=0.0.0)
+teardown                   Deletes the entire stack
+test                       Runs vet, lint and ALL tests
+test-short                 Runs vet, lint and tests (excludes integration tests)
+test-travis                Runs tests via Travis (also exports coverage)
+update-secret              Updates an existing secret in AWS SecretsManager
+upload-files               Upload/puts files into S3 bucket
+vet                        Run the Go vet application
 ```
 </details>
 

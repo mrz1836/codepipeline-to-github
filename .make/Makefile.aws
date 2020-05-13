@@ -10,6 +10,18 @@ ifndef IAM_CAPABILITIES
 endif
 export IAM_CAPABILITIES
 
+## Raw cloud formation template for the application
+ifndef TEMPLATE_RAW
+	override TEMPLATE_RAW=application.yaml
+endif
+export TEMPLATE_RAW
+
+## Packaged cloud formation template
+ifndef TEMPLATE_PACKAGED
+	override TEMPLATE_PACKAGED=packaged.yaml
+endif
+export TEMPLATE_PACKAGED
+
 aws-param-zone: ## Returns the ssm location for the host zone id
 	@test $(domain)
 	@echo "/$(domain)/zone_id"

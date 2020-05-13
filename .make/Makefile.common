@@ -4,33 +4,23 @@ ifndef GIT_DOMAIN
 endif
 
 ## Do we have git available?
-HAS_GIT := $(shell command -v git &> /dev/null)
+HAS_GIT := $(shell command -v git 2> /dev/null)
 
 ifdef HAS_GIT
 	## Do we have a repo?
-	HAS_REPO := "$(shell git rev-parse --show-toplevel &> /dev/null)"
+	HAS_REPO := "$(shell git rev-parse --show-toplevel 2> /dev/null)"
 	ifdef HAS_REPO
 		ifeq (,$(findstring "not a git repository",$(HAS_REPO)))
 			## Automatically detect the repo owner and repo name (for local use with Git)
 			REPO_NAME=$(shell basename "$(HAS_REPO)")
 			REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
+            VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
 			export REPO_NAME
             export REPO_OWNER
+            export VERSION_SHORT
 		endif
 	endif
 endif
-
-## Raw cloud formation template for the application
-ifndef TEMPLATE_RAW
-	override TEMPLATE_RAW=application.yaml
-endif
-export TEMPLATE_RAW
-
-## Packaged cloud formation template
-ifndef TEMPLATE_PACKAGED
-	override TEMPLATE_PACKAGED=packaged.yaml
-endif
-export TEMPLATE_PACKAGED
 
 ## Set the distribution folder
 ifndef DISTRIBUTIONS_DIR
