@@ -9,9 +9,8 @@ phases:
       - pipenv install awscli aws-sam-cli
   build:
     commands:
-      - echo "Starting build & deloy..."
       - |
         if [ ${CODEBUILD_BUILD_NUMBER} -gt "1" ] ; then
-          echo "Build #${CODEBUILD_BUILD_NUMBER}"
+          echo "Starting to deploy build #${CODEBUILD_BUILD_NUMBER}"
           make deploy
         fi

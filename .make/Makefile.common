@@ -14,9 +14,7 @@ ifdef HAS_GIT
 		REPO_NAME=$(shell basename "$(shell git rev-parse --show-toplevel 2> /dev/null)")
 		REPO_OWNER=$(shell git config --get remote.origin.url | sed 's/git@$(GIT_DOMAIN)://g' | sed 's/\/$(REPO_NAME).git//g')
 		VERSION_SHORT=$(shell git describe --tags --always --abbrev=0)
-		export REPO_NAME
-		export REPO_OWNER
-		export VERSION_SHORT
+		export REPO_NAME, REPO_OWNER, VERSION_SHORT
 	endif
 endif
 
