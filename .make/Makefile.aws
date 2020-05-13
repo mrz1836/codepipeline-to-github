@@ -31,14 +31,13 @@ aws-param-certificate: ## Returns the ssm location for the domain ssl certificat
 	@echo "/$(domain)/certificate_id"
 
 create-env-key: ## Creates a new key in KMS for a new stage
-	@ #Example: make create-env-key description="keys to encrypt environment variables"
 	@test $(APPLICATION_NAME)
 	@test $(APPLICATION_STAGE_NAME)
-	@test $(PARAM_NAME_KMS_KEY_ID)
 	@$(eval kms_key_id := $(shell aws kms create-key --description "Used to encrypt environment variables for $(APPLICATION_NAME)" --query 'KeyMetadata.KeyId' --output text))
+	@$(eval param_location := $(shell $(MAKE) env-key-location app=$(APPLICATION_NAME) stage=$(APPLICATION_STAGE_NAME) ))
 	@aws kms create-alias --alias-name "alias/$(APPLICATION_NAME)/$(APPLICATION_STAGE_NAME)" --target-key-id $(kms_key_id)
-	@$(MAKE) save-param param_name="$(PARAM_NAME_KMS_KEY_ID)" param_value=$(kms_key_id)
-	@echo "Saved parameter: $(PARAM_NAME_KMS_KEY_ID) with key id: $(kms_key_id)"
+	@$(MAKE) save-param param_name="$(param_location)" param_value=$(kms_key_id)
+	@echo "Saved parameter: $(param_location) with key id: $(kms_key_id)"
 
 create-secret: ## Creates an secret into AWS SecretsManager
 	@# Example: make create-secret name='production/test' description='This is a test' secret_value='{\"Key\":\"my_key\",\"Another\":\"value\"}' kms_key_id=b329...
