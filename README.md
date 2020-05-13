@@ -106,11 +106,15 @@ This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-m
 <summary><strong><code>Manage Environment Secrets (AWS)</code></strong></summary>
 <br/>
 
-The `Github token` is stored encrypted for use in Lambda (decrypted at runtime via [KMS](https://aws.amazon.com/kms/)).
+- `github_token` is a personal token with access to make a webhook
+- `kms_key_id` is from the previous step (Create Environment Encryption Keys)
 
 Add or update your Github personal access token
 ```shell script
-make save-secrets token="YOUR_GITHUB_TOKEN"  kms_key_id="YOUR_KMS_KEY_ID"  APPLICATION_STAGE_NAME="<stage>"
+make save-secrets \
+      github_token="YOUR_GITHUB_TOKEN" \
+      kms_key_id="YOUR_KMS_KEY_ID" \
+      APPLICATION_STAGE_NAME="<stage>"
 ```
 </details>
 
