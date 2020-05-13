@@ -1,6 +1,9 @@
 # Common makefile commands & variables between projects
 include .make/Makefile.common
 
+# Golang makefile commands & variables between projects
+include .make/Makefile.go
+
 # Common aws commands & variables between projects
 include .make/Makefile.aws
 
