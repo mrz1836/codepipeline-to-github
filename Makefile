@@ -74,9 +74,6 @@ endif
 
 .PHONY: clean lambda deploy
 
-all: ## Run lint, test and vet
-	@$(MAKE) test
-
 build: ## Build the lambda function as a compiled application
 	@go build -o $(RELEASES_DIR)/$(PACKAGE_NAME)/$(STATUS_BINARY) .
 
