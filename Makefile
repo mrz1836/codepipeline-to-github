@@ -86,7 +86,7 @@ clean: ## Remove previous builds, test cache, and packaged releases
 deploy: ## Build, prepare and deploy
 	@$(MAKE) lambda
 	@$(MAKE) package
-	@sam deploy \
+	@SAM_CLI_TELEMETRY=0 sam deploy \
         --template-file $(TEMPLATE_PACKAGED) \
         --stack-name $(APPLICATION_STACK_NAME)  \
         --region $(AWS_REGION) \
@@ -116,7 +116,7 @@ release:: ## Runs common.release and then runs godocs
 run: ## Fires the lambda function (run event=started)
 	@$(MAKE) lambda
 	@if [ "$(event)" = "" ]; then echo $(eval event += started); fi
-	@sam local invoke StatusFunction \
+	@SAM_CLI_TELEMETRY=0 sam local invoke StatusFunction \
 		--force-image-build \
 		-e events/$(event)-event.json \
 		--template $(TEMPLATE_RAW) \
