@@ -105,6 +105,7 @@ Resources:
       Description: "Update a GitHub commit status via CodePipeline events"
       CodeUri: releases/status/.
       Handler: status
+      KmsKeyArn: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${EncryptionKeyId}'
       Policies:
         - AWSCodePipelineReadOnlyAccess
         - AWSLambdaBasicExecutionRole
