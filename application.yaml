@@ -282,10 +282,9 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:build/${ApplicationStackName}-build-deploy:*"
-                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group/aws/codebuild/${ApplicationStackName}-build-deploy"
-                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group/aws/codebuild/${ApplicationStackName}-build-deploy:*"
-                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ApplicationStackName}-build-deploy:log-stream:*"
+                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:build/${ApplicationStackName}-build*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group/aws/codebuild/${ApplicationStackName}-build*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ApplicationStackName}-build*"
               - Effect: Allow
                 Action:
                   - s3:GetBucketAcl
@@ -303,7 +302,7 @@ Resources:
                   - codebuild:CreateReportGroup
                   - codebuild:UpdateReport
                 Resource:
-                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${ApplicationStackName}-build-deploy-*"
+                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${ApplicationStackName}-build*"
               - Effect: Allow
                 Action:
                   - cloudformation:Cancel*
@@ -346,6 +345,11 @@ Resources:
                   - ssm:Get*
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ApplicationName}/${ApplicationStageName}*"
+              - Effect: Allow
+                  Action:
+                    - secretsmanager:GetSecret*
+                  Resource:
+                    - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ApplicationStageName}/${ApplicationStageName}*"
               - Effect: Allow
                 Action:
                   - iam:Get*
