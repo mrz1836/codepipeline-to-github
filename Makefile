@@ -1,3 +1,6 @@
+## Set the binary name
+CUSTOM_BINARY_NAME := status
+
 # Common makefile commands & variables between projects
 include .make/Makefile.common
 
@@ -57,14 +60,9 @@ ifndef RELEASES_DIR
 	override RELEASES_DIR=./releases
 endif
 
-## Function: status (binary name)
-ifndef STATUS_BINARY
-	override STATUS_BINARY=status
-endif
-
 ## Package directory name
 ifndef PACKAGE_NAME
-	override PACKAGE_NAME=status
+	override PACKAGE_NAME=$(BINARY_NAME)
 endif
 
 ## Set the local environment variables when using "run"
@@ -75,7 +73,7 @@ endif
 .PHONY: clean lambda deploy
 
 build: ## Build the lambda function as a compiled application
-	@go build -o $(RELEASES_DIR)/$(PACKAGE_NAME)/$(STATUS_BINARY) .
+	@go build -o $(RELEASES_DIR)/$(PACKAGE_NAME)/$(BINARY_NAME) .
 
 clean: ## Remove previous builds, test cache, and packaged releases
 	@go clean -cache -testcache -i -r
