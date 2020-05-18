@@ -166,7 +166,7 @@ func loadConfiguration(kmsSvc kmsiface.KMSAPI) (err error) {
 	}
 
 	// Update the Token with the decoded value or fail
-	config.GithubAccessToken, err = decodeString(kmsSvc, config.GithubAccessToken)
+	config.GithubAccessToken, err = decryptString(kmsSvc, config.GithubAccessToken)
 	return
 }
 
@@ -212,9 +212,9 @@ func getCommit(pipelineName, executionID string, pipeline codepipelineiface.Code
 	return
 }
 
-// decodeString uses AWS Key Management Service (AWS KMS) to decrypt environment variables.
+// decryptString uses AWS Key Management Service (AWS KMS) to decrypt environment variables.
 // In order for this method to work, the function needs access to the kms:Decrypt capability.
-func decodeString(kmsSvc kmsiface.KMSAPI, encryptedText string) (string, error) {
+func decryptString(kmsSvc kmsiface.KMSAPI, encryptedText string) (string, error) {
 
 	// Decode the encryptedText
 	sDec, err := base64.StdEncoding.DecodeString(encryptedText)

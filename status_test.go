@@ -330,14 +330,14 @@ func TestGetCommit(t *testing.T) {
 	}
 }
 
-// TestDecodeString will test decodeString()
-func TestDecodeString(t *testing.T) {
+// TestDecryptString will test decryptString()
+func TestDecryptString(t *testing.T) {
 	t.Parallel()
 
 	mockKms := &mockKmsClient{}
 
 	// Valid decryption
-	decrypted, err := decodeString(mockKms, "dGhpcyBpcyBzYW5mb3VuZHJ5IGxpbnV4IHR1dG9yaWFsCg==")
+	decrypted, err := decryptString(mockKms, "dGhpcyBpcyBzYW5mb3VuZHJ5IGxpbnV4IHR1dG9yaWFsCg==")
 	if err != nil {
 		t.Fatal("error occurred", err.Error())
 	} else if decrypted != "some-encrypted-text" {
@@ -345,13 +345,13 @@ func TestDecodeString(t *testing.T) {
 	}
 
 	// Invalid base64
-	_, err = decodeString(mockKms, "invalid-base-64")
+	_, err = decryptString(mockKms, "invalid-base-64")
 	if err == nil {
 		t.Fatal("error should have occurred")
 	}
 
 	// Invalid value
-	_, err = decodeString(mockKms, "")
+	_, err = decryptString(mockKms, "")
 	if err == nil {
 		t.Fatal("error should have occurred")
 	}
