@@ -248,6 +248,7 @@ Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
+      Description: "This role is for the CodeBuild resource for CodeProjects"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -361,6 +362,7 @@ Resources:
   CodePipelineRole:
     Type: AWS::IAM::Role
     Properties:
+      Description: "This role is for the CodePipeline execution and deployment"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
