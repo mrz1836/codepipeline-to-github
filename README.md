@@ -136,16 +136,11 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-One command will build, test, package and deploy the application to AWS using the default `production` stage. 
+One command will build, test, package and deploy the application to AWS using the default `production` stage and using default tags. 
 After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
 ```
-
-_(Example)_ Customized deployment for another stage
-```shell script
-make deploy stage="development"
-``` 
 
 _(Example)_ Customized deployment for another stage
 ```shell script
@@ -155,7 +150,17 @@ make deploy stage="development" branch="development"
 _(Example)_ Customized deployment for a feature branch
 ```shell script
 make deploy stage="development" branch="some-feature" feature="some-feature"
-``` 
+```
+
+_(Example)_ Customized S3 bucket location
+```shell script
+make deploy bucket="some-S3-bucket-location"
+```
+
+_(Example)_ Customized tags for the deployment
+```shell script
+make deploy tags="MyTag=some-value AnotherTag=some-value"
+```  
 
 If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
 </details>
@@ -164,17 +169,17 @@ If you make any adjustments to the command above, update the [buildspec](buildsp
 <summary><strong><code>Tear Down CI & Hosting Environment (AWS)</code></strong></summary>
 <br/>
 
-Remove the Stack(s)
+Remove the stack (using default stage: `production`)
 ```shell script
 make teardown
 ```   
 
-_(Example)_ Teardown another stage
+_(Example)_ Teardown another stack via stage
 ```shell script
 make teardown stage="development"
 ``` 
 
-_(Example)_ Teardown a feature/branch application
+_(Example)_ Teardown a feature/branch stack
 ```shell script
 make teardown stage="development" feature="some-feature"
 ``` 
