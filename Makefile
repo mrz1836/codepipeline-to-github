@@ -131,16 +131,20 @@ save-secrets: ## Helper for saving Github token(s) to Secrets Manager (extendabl
 	@test $(kms_key_id)
 	@$(eval existing_secret := $(shell aws secretsmanager describe-secret --secret-id "$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" --output text))
 	@$(eval github_token_encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(github_token)"))
+	@$(eval secret_value := $(shell echo '{' \
+		'\"github_personal_token\":\"$(github_token)\"' \
+		',\"github_personal_token_encrypted\":\"$(github_token_encrypted)\"' \
+		'}'))
 	@if [ '$(existing_secret)' = "" ]; then\
 		echo "Creating a new secret..."; \
 		$(MAKE) create-secret \
 			name="$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" \
 			description="Sensitive credentials for $(APPLICATION_NAME):$(APPLICATION_STAGE_NAME)" \
-			secret_value='{\"github_personal_token\":\"$(github_token)\",\"github_personal_token_encrypted\":\"$(github_token_encrypted)\"}' \
+			secret_value='$(secret_value)' \
 			kms_key_id=$(kms_key_id);  \
 	else\
 		echo "Updating an existing secret..."; \
 		$(MAKE) update-secret \
             name="$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" \
-        	secret_value='{\"github_personal_token\":\"$(github_token)\",\"github_personal_token_encrypted\":\"$(github_token_encrypted)\"}'; \
+        	secret_value='$(secret_value)'; \
 	fi

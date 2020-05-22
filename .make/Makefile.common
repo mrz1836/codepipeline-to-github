@@ -18,6 +18,16 @@ ifdef branch
 	override REPO_BRANCH=$(branch)
 endif
 
+## Set if defined (alias variable for ease of use)
+ifdef tags
+	override AWS_TAGS=$(tags)
+endif
+
+## Set if defined (alias variable for ease of use)
+ifdef bucket
+	override APPLICATION_BUCKET=$(bucket)
+endif
+
 ## Do we have git available?
 HAS_GIT := $(shell command -v git 2> /dev/null)
 
