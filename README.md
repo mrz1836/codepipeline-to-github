@@ -86,6 +86,7 @@ The application relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-m
 and [AWS SSM](https://aws.amazon.com/systems-manager/features/) to store environment variables. 
 Sensitive environment variables are encrypted using [AWS KMS](https://aws.amazon.com/kms/) and then decrypted at runtime.
 
+**Stages:**
 Deploy different environments by changing the `<stage>` to `production` or `developement` as an example.
 The default stage is `production` if not specified.
 
@@ -95,7 +96,7 @@ The default stage is `production` if not specified.
 
 Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment variables
 ```shell script
-make create-env-key APPLICATION_STAGE_NAME="<stage>"
+make create-env-key stage="<stage>"
 ```
 
 This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-manager/features/) located at: `/<application>/<stage>/kms_key_id` 
@@ -114,7 +115,7 @@ Add or update your Github personal access token
 make save-secrets \
       github_token="YOUR_GITHUB_TOKEN" \
       kms_key_id="YOUR_KMS_KEY_ID" \
-      APPLICATION_STAGE_NAME="<stage>"
+      stage="<stage>"
 ```
 </details>
 
@@ -135,15 +136,25 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
-One command will build, test, package and deploy the application to AWS. 
+One command will build, test, package and deploy the application to AWS using the default `production` stage. 
 After initial deployment, updating the function is as simple as committing to Github.
 ```shell script
 make deploy
 ```
 
-_(Example)_ Customized deployment for another stage/branch
+_(Example)_ Customized deployment for another stage
 ```shell script
-make deploy APPLICATION_STAGE_NAME="development" REPO_BRANCH="development"
+make deploy stage="development"
+``` 
+
+_(Example)_ Customized deployment for another stage
+```shell script
+make deploy stage="development" branch="development"
+``` 
+
+_(Example)_ Customized deployment for a feature branch
+```shell script
+make deploy stage="development" branch="some-feature" feature="some-feature"
 ``` 
 
 If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
@@ -160,7 +171,12 @@ make teardown
 
 _(Example)_ Teardown another stage
 ```shell script
-make teardown APPLICATION_STAGE_NAME="development"
+make teardown stage="development"
+``` 
+
+_(Example)_ Teardown a feature/branch application
+```shell script
+make teardown stage="development" feature="some-feature"
 ``` 
 </details>
 

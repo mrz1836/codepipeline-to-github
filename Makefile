@@ -32,7 +32,12 @@ endif
 
 ## Cloud formation stack name (combines the app name with the stage for unique stacks)
 ifndef APPLICATION_STACK_NAME
-	override APPLICATION_STACK_NAME="$(APPLICATION_NAME)-$(APPLICATION_STAGE_NAME)"
+	override APPLICATION_STACK_NAME=$(subst _,-,"$(APPLICATION_NAME)-$(APPLICATION_STAGE_NAME)")
+endif
+
+## Application feature name (if it's a feature branch of a stage) (feature="some-feature")
+ifdef APPLICATION_FEATURE_NAME
+	override APPLICATION_STACK_NAME=$(subst _,-,"$(APPLICATION_NAME)-$(APPLICATION_STAGE_NAME)-$(APPLICATION_FEATURE_NAME)")
 endif
 
 ## S3 prefix to store the distribution files
