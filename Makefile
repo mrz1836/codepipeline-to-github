@@ -126,15 +126,15 @@ run: ## Fires the lambda function (run event=started)
 		--env-vars $(LOCAL_ENV_FILE)
 
 save-secrets: ## Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
-	@# Example: make save-secrets github_token=12345... kms_key_id=b329... (Optional) APPLICATION_STAGE_NAME=production
+	@# Example: make save-secrets github_token=12345... kms_key_id=b329... stage=production
 	@test $(github_token)
 	@test $(kms_key_id)
-	@$(eval existing_secret := $(shell aws secretsmanager describe-secret --secret-id "$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" --output text))
 	@$(eval github_token_encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(github_token)"))
 	@$(eval secret_value := $(shell echo '{' \
 		'\"github_personal_token\":\"$(github_token)\"' \
 		',\"github_personal_token_encrypted\":\"$(github_token_encrypted)\"' \
 		'}'))
+	@$(eval existing_secret := $(shell aws secretsmanager describe-secret --secret-id "$(APPLICATION_STAGE_NAME)/$(APPLICATION_NAME)" --output text))
 	@if [ '$(existing_secret)' = "" ]; then\
 		echo "Creating a new secret..."; \
 		$(MAKE) create-secret \
