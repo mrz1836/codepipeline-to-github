@@ -64,6 +64,7 @@ create-env-key: ## Creates a new key in KMS for a new stage
 	@test $(APPLICATION_NAME)
 	@test $(APPLICATION_STAGE_NAME)
 	@$(eval kms_key_id := $(shell aws kms create-key --description "Used to encrypt environment variables for $(APPLICATION_NAME)" --query 'KeyMetadata.KeyId' --output text))
+	@aws kms enable-key-rotation --key-id $(kms_key_id)
 	@$(eval param_location := $(shell $(MAKE) env-key-location app=$(APPLICATION_NAME) stage=$(APPLICATION_STAGE_NAME) ))
 	@aws kms create-alias --alias-name "alias/$(APPLICATION_NAME)/$(APPLICATION_STAGE_NAME)" --target-key-id $(kms_key_id)
 	@$(MAKE) save-param param_name="$(param_location)" param_value=$(kms_key_id)
