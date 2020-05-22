@@ -1,26 +1,56 @@
 ## Default region for the application
 ifndef AWS_REGION
 	override AWS_REGION=us-east-1
+	export AWS_REGION
 endif
-export AWS_REGION
 
 ## Set capabilities for the sam deploy option
 ifndef IAM_CAPABILITIES
 	override IAM_CAPABILITIES="CAPABILITY_IAM"
+	export IAM_CAPABILITIES
 endif
-export IAM_CAPABILITIES
 
 ## Raw cloud formation template for the application
 ifndef TEMPLATE_RAW
 	override TEMPLATE_RAW=application.yaml
+	export TEMPLATE_RAW
 endif
-export TEMPLATE_RAW
 
 ## Packaged cloud formation template
 ifndef TEMPLATE_PACKAGED
 	override TEMPLATE_PACKAGED=packaged.yaml
+	export TEMPLATE_PACKAGED
 endif
-export TEMPLATE_PACKAGED
+
+## Set if defined (alias variable for ease of use)
+ifdef tags
+	override AWS_TAGS=$(tags)
+	export AWS_TAGS
+endif
+
+## Set if defined (alias variable for ease of use)
+ifdef bucket
+	override APPLICATION_BUCKET=$(bucket)
+	export APPLICATION_BUCKET
+endif
+
+## Set if defined (alias variable for ease of use)
+ifdef domain
+	override APPLICATION_DOMAIN_NAME=$(domain)
+	export APPLICATION_DOMAIN_NAME
+endif
+
+## Set if defined (alias variable for ease of use)
+ifdef stage
+	override APPLICATION_STAGE_NAME=$(stage)
+	export APPLICATION_STAGE_NAME
+endif
+
+## Set if defined (alias variable for ease of use)
+ifdef feature
+	override APPLICATION_FEATURE_NAME=$(feature)
+	export APPLICATION_FEATURE_NAME
+endif
 
 aws-param-zone: ## Returns the ssm location for the host zone id
 	@test $(domain)

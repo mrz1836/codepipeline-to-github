@@ -86,7 +86,6 @@ The application relies on [AWS Secrets Manager](https://aws.amazon.com/secrets-m
 and [AWS SSM](https://aws.amazon.com/systems-manager/features/) to store environment variables. 
 Sensitive environment variables are encrypted using [AWS KMS](https://aws.amazon.com/kms/) and then decrypted at runtime.
 
-#### Stages
 Deploy different environments by changing the `<stage>` to `production` or `developement` as an example.
 The default stage is `production` if not specified.
 
@@ -161,8 +160,6 @@ _(Example)_ Customized tags for the deployment
 ```shell script
 make deploy tags="MyTag=some-value AnotherTag=some-value"
 ```  
-
-If you make any adjustments to the command above, update the [buildspec](buildspec.yml) file accordingly.  
 </details>
 
 <details>

@@ -126,7 +126,7 @@ run: ## Fires the lambda function (run event=started)
 		--env-vars $(LOCAL_ENV_FILE)
 
 save-secrets: ## Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
-	@# Example: make save-secrets github_token=12345... kms_key_id=b329... stage=production
+	@# Example: make save-secrets github_token=12345... kms_key_id=b329... stage=<stage>
 	@test $(github_token)
 	@test $(kms_key_id)
 	@$(eval github_token_encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(github_token)"))
