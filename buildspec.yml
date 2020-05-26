@@ -4,6 +4,7 @@ phases:
     runtime-versions:
       python: latest
     commands:
+      - make code-build-start
       - pip install --upgrade pip
       - pip install pipenv --user
       - pipenv install awscli aws-sam-cli
