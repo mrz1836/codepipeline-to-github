@@ -1,26 +1,30 @@
 ## Default region for the application
 ifndef AWS_REGION
-	override AWS_REGION=us-east-1
-	export AWS_REGION
+	ifdef AWS_DEFAULT_REGION
+		override AWS_REGION=AWS_DEFAULT_REGION
+	else
+		override AWS_REGION=us-east-1
+	endif
 endif
+export AWS_REGION
 
 ## Set capabilities for the sam deploy option
 ifndef IAM_CAPABILITIES
 	override IAM_CAPABILITIES="CAPABILITY_IAM"
-	export IAM_CAPABILITIES
 endif
+export IAM_CAPABILITIES
 
 ## Raw cloud formation template for the application
 ifndef TEMPLATE_RAW
 	override TEMPLATE_RAW=application.yaml
-	export TEMPLATE_RAW
 endif
+export TEMPLATE_RAW
 
 ## Packaged cloud formation template
 ifndef TEMPLATE_PACKAGED
 	override TEMPLATE_PACKAGED=packaged.yaml
-	export TEMPLATE_PACKAGED
 endif
+export TEMPLATE_PACKAGED
 
 ## Set if defined (alias variable for ease of use)
 ifdef tags
@@ -59,9 +63,6 @@ aws-param-zone: ## Returns the ssm location for the host zone id
 aws-param-certificate: ## Returns the ssm location for the domain ssl certificate id
 	@test $(domain)
 	@echo "/$(domain)/certificate_id"
-
-code-build-start: ## Runs a script to set Git information into the codebuild environment
-	@. ./.make/code-build-start.sh
 
 create-env-key: ## Creates a new key in KMS for a new stage
 	@test $(APPLICATION_NAME)
