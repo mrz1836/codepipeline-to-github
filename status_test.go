@@ -284,7 +284,7 @@ func TestGetArtifact(t *testing.T) {
 	}
 
 	// Test an invalid artifact name
-	response, err = getExecutionOutput("bad-artifact-name", "12345", mockPipeline)
+	response, _ = getExecutionOutput("bad-artifact-name", "12345", mockPipeline)
 
 	artifact = getArtifact(response)
 	if artifact != nil {

@@ -7,6 +7,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -30,7 +31,7 @@ import (
 const (
 	sourceArtifactName = "SourceCode"
 	stageTesting       = "testing"
-	stageProduction    = "production"
+	// stageProduction    = "production"
 )
 
 // event is what is emitted by CloudWatch
@@ -125,7 +126,7 @@ func ProcessEvent(ev event) error {
 
 	// Create the request
 	var req *http.Request
-	if req, err = http.NewRequest(http.MethodPost, githubURL, &b); err != nil {
+	if req, err = http.NewRequestWithContext(context.Background(), http.MethodPost, githubURL, &b); err != nil {
 		return err
 	}
 
