@@ -231,7 +231,6 @@ make help
 
 List of all current commands:
 ```text
-all                        Run lint, test and vet
 aws-param-certificate      Returns the ssm location for the domain ssl certificate id
 aws-param-zone             Returns the ssm location for the host zone id
 build                      Build the lambda function as a compiled application
@@ -247,9 +246,11 @@ encrypt                    Encrypts data using a KMY Key ID (awscli v2)
 env-key-location           Returns the environment encryption key location
 godocs                     Sync the latest tag with GoDocs
 help                       Show this help message
+install                    Install the application
+install-go                 Install the application (Using Native Go)
 invalidate-cache           Invalidates a cloudfront cache based on path
 lambda                     Build a compiled version to deploy to Lambda
-lint                       Run the Go lint application
+lint                       Run the golangci-lint application (install if not found)
 package                    Process the CF template and prepare for deployment
 release                    Full production release (creates release in Github)
 release                    Runs common.release and then runs godocs
@@ -267,7 +268,10 @@ tag-update                 Update an existing tag to current commit (tag-update 
 teardown                   Deletes the entire stack
 test                       Runs vet, lint and ALL tests
 test-short                 Runs vet, lint and tests (excludes integration tests)
-test-travis                Runs tests via Travis (also exports coverage)
+test-travis                Runs all tests via Travis (also exports coverage)
+test-travis-short          Runs unit tests via Travis (also exports coverage)
+uninstall                  Uninstall the application (and remove files)
+update-linter              Update the golangci-lint package (macOS only)
 update-secret              Updates an existing secret in AWS SecretsManager
 upload-files               Upload/puts files into S3 bucket
 vet                        Run the Go vet application
