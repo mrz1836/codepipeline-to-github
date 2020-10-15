@@ -1,10 +1,13 @@
 /*
 Package main is the CodePipeline status event receiver
+
+More information: https://github.com/mrz1836/codepipeline-to-github
 */
 package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -18,7 +21,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/codepipeline"
+	"github.com/aws/aws-sdk-go/service/codepipeline/codepipelineiface"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go/service/kms/kmsiface"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -26,7 +31,7 @@ import (
 const (
 	sourceArtifactName = "SourceCode"
 	stageTesting       = "testing"
-	stageProduction    = "production"
+	// stageProduction    = "production"
 )
 
 // event is what is emitted by CloudWatch
@@ -79,13 +84,19 @@ func ProcessEvent(ev event) error {
 		return errors.New("missing event param pipeline")
 	}
 
+	// Create a new KMS session
+	kmsSvc := kms.New(awsSession)
+
 	// Load the configuration
-	if err := loadConfiguration(); err != nil {
+	if err := loadConfiguration(kmsSvc); err != nil {
 		return err
 	}
 
+	// Start a new CodePipeline service
+	pipeline := codepipeline.New(awsSession)
+
 	// Get the commit info from the pipeline execution
-	commit, githubStatus, revisionURL, err := getCommit(ev.Detail.Pipeline, ev.Detail.ExecutionID)
+	commit, githubStatus, revisionURL, err := getCommit(ev.Detail.Pipeline, ev.Detail.ExecutionID, pipeline)
 	if err != nil {
 		return err
 	} else if revisionURL == nil {
@@ -115,7 +126,7 @@ func ProcessEvent(ev event) error {
 
 	// Create the request
 	var req *http.Request
-	if req, err = http.NewRequest(http.MethodPost, githubURL, &b); err != nil {
+	if req, err = http.NewRequestWithContext(context.Background(), http.MethodPost, githubURL, &b); err != nil {
 		return err
 	}
 
@@ -143,16 +154,11 @@ func ProcessEvent(ev event) error {
 }
 
 // loadConfiguration will decrypt any encrypted variables
-func loadConfiguration() (err error) {
+func loadConfiguration(kmsSvc kmsiface.KMSAPI) (err error) {
 
 	// Get configuration set using environment variables
 	if err = envconfig.Process("", &config); err != nil {
 		return
-	}
-
-	// There should be a value at this point
-	if len(config.GithubAccessToken) == 0 {
-		return errors.New("missing access token")
 	}
 
 	// Skip KMS on testing stage
@@ -160,59 +166,27 @@ func loadConfiguration() (err error) {
 		return
 	}
 
-	// Create a new AWS session
-	if awsSession == nil {
-		awsSession = session.Must(session.NewSession(&aws.Config{
-			Region: aws.String(config.AWSRegion),
-		}))
-	}
-
-	// Create a new KMS session
-	kmsSvc := kms.New(awsSession)
-
 	// Update the Token with the decoded value or fail
-	config.GithubAccessToken, err = decodeString(kmsSvc, config.GithubAccessToken)
+	config.GithubAccessToken, err = decryptString(kmsSvc, config.GithubAccessToken)
 	return
 }
 
 // getCommit will get the Github commit and revision url from an execution
-func getCommit(pipelineName, executionID string) (commit, status string, revisionURL *url.URL, err error) {
-
-	// Create a new AWS session
-	if awsSession == nil {
-		awsSession = session.Must(session.NewSession(&aws.Config{
-			Region: aws.String(config.AWSRegion),
-		}))
-	}
-
-	// Start a new CodePipeline service
-	pipeline := codepipeline.New(awsSession)
+func getCommit(pipelineName, executionID string, pipeline codepipelineiface.CodePipelineAPI) (commit, status string, revisionURL *url.URL, err error) {
 
 	// Get the execution details
-	var res *codepipeline.GetPipelineExecutionOutput
-	if res, err = pipeline.GetPipelineExecution(&codepipeline.GetPipelineExecutionInput{
-		PipelineExecutionId: aws.String(executionID),
-		PipelineName:        aws.String(pipelineName),
-	}); err != nil {
-		return
-	} else if res == nil {
-		err = fmt.Errorf("missing pipeline execution")
+	var executionOutput *codepipeline.GetPipelineExecutionOutput
+	if executionOutput, err = getExecutionOutput(pipelineName, executionID, pipeline); err != nil {
 		return
 	}
 
 	// Find the source artifacts
-	var sourceArtifact *codepipeline.ArtifactRevision
-	for _, artifact := range res.PipelineExecution.ArtifactRevisions {
-		if aws.StringValue(artifact.Name) == sourceArtifactName {
-			sourceArtifact = artifact
-			break
-		}
-	}
+	sourceArtifact := getArtifact(executionOutput)
 
 	// No artifact to work with (this occurs if a "Release Change" event is fired)
 	if sourceArtifact == nil {
 		fmt.Printf("no %s found in execution: %s for pipeline: %s",
-			sourceArtifactName, *res.PipelineExecution.PipelineExecutionId, *res.PipelineExecution.PipelineName)
+			sourceArtifactName, *executionOutput.PipelineExecution.PipelineExecutionId, *executionOutput.PipelineExecution.PipelineName)
 		return
 	}
 
@@ -227,7 +201,7 @@ func getCommit(pipelineName, executionID string) (commit, status string, revisio
 	}
 
 	// Set the status based on the pipeline status
-	switch aws.StringValue(res.PipelineExecution.Status) {
+	switch aws.StringValue(executionOutput.PipelineExecution.Status) {
 	case "InProgress":
 		status = "pending"
 	case "Succeeded":
@@ -239,9 +213,9 @@ func getCommit(pipelineName, executionID string) (commit, status string, revisio
 	return
 }
 
-// decodeString uses AWS Key Management Service (AWS KMS) to decrypt environment variables.
+// decryptString uses AWS Key Management Service (AWS KMS) to decrypt environment variables.
 // In order for this method to work, the function needs access to the kms:Decrypt capability.
-func decodeString(kmsSvc *kms.KMS, encryptedText string) (string, error) {
+func decryptString(kmsSvc kmsiface.KMSAPI, encryptedText string) (string, error) {
 
 	// Decode the encryptedText
 	sDec, err := base64.StdEncoding.DecodeString(encryptedText)
@@ -261,7 +235,40 @@ func decodeString(kmsSvc *kms.KMS, encryptedText string) (string, error) {
 	return strings.TrimSpace(strings.TrimSuffix(string(out.Plaintext), "\n")), err
 }
 
+// getExecutionOutput will return the output details of the pipeline execution
+func getExecutionOutput(pipelineName, executionID string, pipeline codepipelineiface.CodePipelineAPI) (response *codepipeline.GetPipelineExecutionOutput, err error) {
+	if response, err = pipeline.GetPipelineExecution(&codepipeline.GetPipelineExecutionInput{
+		PipelineExecutionId: aws.String(executionID),
+		PipelineName:        aws.String(pipelineName),
+	}); err != nil {
+		return
+	} else if response == nil {
+		err = fmt.Errorf("missing pipeline execution")
+	}
+	return
+}
+
+// getArtifact will get the artifact from a given output
+func getArtifact(executionOutput *codepipeline.GetPipelineExecutionOutput) (sourceArtifact *codepipeline.ArtifactRevision) {
+	for _, artifact := range executionOutput.PipelineExecution.ArtifactRevisions {
+		if aws.StringValue(artifact.Name) == sourceArtifactName {
+			sourceArtifact = artifact
+			break
+		}
+	}
+	return
+}
+
 // Start the lambda event handler
 func main() {
+
+	// Create a new AWS session
+	if awsSession == nil {
+		awsSession = session.Must(session.NewSession(&aws.Config{
+			Region: aws.String(config.AWSRegion),
+		}))
+	}
+
+	// Start lambda
 	lambda.Start(ProcessEvent)
 }
