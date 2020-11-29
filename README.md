@@ -3,7 +3,7 @@
 
 [![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?logo=github&style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
 [![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
-[![Build Status](https://travis-ci.com/mrz1836/codepipeline-to-github.svg?branch=master&v=3)](https://travis-ci.com/mrz1836/codepipeline-to-github)
+[![Build Status](https://img.shields.io/github/workflow/status/mrz1836/codepipeline-to-github/run-go-tests?logo=github&v=3)](https://github.com/mrz1836/codepipeline-to-github/actions)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github?v=3)](https://golang.org/)
 [![Sponsor](https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat&v=3)](https://github.com/sponsors/mrz1836)
@@ -267,9 +267,10 @@ tag-remove                 Remove a tag if found (tag-remove version=0.0.0)
 tag-update                 Update an existing tag to current commit (tag-update version=0.0.0)
 teardown                   Deletes the entire stack
 test                       Runs vet, lint and ALL tests
+test-ci                    Runs all tests via CI (exports coverage)
+test-ci-no-race            Runs all tests via CI (no race) (exports coverage)
+test-ci-short              Runs unit tests via CI (exports coverage)
 test-short                 Runs vet, lint and tests (excludes integration tests)
-test-travis                Runs all tests via Travis (also exports coverage)
-test-travis-short          Runs unit tests via Travis (also exports coverage)
 uninstall                  Uninstall the application (and remove files)
 update-linter              Update the golangci-lint package (macOS only)
 update-secret              Updates an existing secret in AWS SecretsManager
@@ -281,7 +282,8 @@ vet                        Run the Go vet application
 <br/>
 
 ## Examples & Tests
-All unit tests run via [Travis CI](https://travis-ci.org/mrz1836/codepipeline-to-github) and uses [Go version 1.15.x](https://golang.org/doc/go1.15). View the [deployment configuration file](.travis.yml).
+All unit tests run via [Github Actions](https://github.com/mrz1836/codepipeline-to-github/actions) and
+uses [Go version 1.15.x](https://golang.org/doc/go1.15). View the [configuration file](.github/workflows/run-tests.yml).
 
 Run all tests (including integration tests)
 ```shell script
