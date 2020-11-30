@@ -43,8 +43,8 @@ immediately start updating commits as pipeline events occur. All you need is a [
 
 Clone or [go get](https://golang.org/doc/articles/go_command.html) the files locally
 ```shell script
-go get github.com/mrz1818/codepipeline-to-github
-cd $GOPATH/src/github.com/mrz1818/codepipeline-to-github
+go get github.com/mrz1836/codepipeline-to-github
+cd $GOPATH/src/github.com/mrz1836/codepipeline-to-github
 ```
 
 <details>
