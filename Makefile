@@ -2,13 +2,13 @@
 CUSTOM_BINARY_NAME := status
 
 # Common makefile commands & variables between projects
-include .make/Makefile.common
+include .make/common.mk
 
 # Common Golang makefile commands & variables between projects
-include .make/Makefile.go
+include .make/go.mk
 
 # Common aws commands & variables between projects
-include .make/Makefile.aws
+include .make/aws.mk
 
 ## Stage or environment for the application
 ifndef APPLICATION_STAGE_NAME
