@@ -7,7 +7,7 @@
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github?v=3)](https://golang.org/)
 [![Sponsor](https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat&v=3)](https://github.com/sponsors/mrz1836)
-[![Donate](https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat)](https://mrz1818.com/?tab=tips&af=codepipeline-to-github)
+[![Donate](https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat)](https://mrz1818.com/?tab=tips&utm_source=github&utm_medium=sponsor-link&utm_campaign=codepipeline-to-github&utm_term=codepipeline-to-github&utm_content=codepipeline-to-github)
 
 <br/>
 
@@ -312,7 +312,7 @@ View the [contributing guidelines](CONTRIBUTING.md) and please follow the [code 
 All kinds of contributions are welcome :raised_hands:! 
 The most basic way to show your support is to star :star2: the project, or to raise issues :speech_balloon:. 
 You can also support this project by [becoming a sponsor on GitHub](https://github.com/sponsors/mrz1836) :clap: 
-or by making a [**bitcoin donation**](https://mrz1818.com/?tab=tips&af=codepipeline-to-github) to ensure this journey continues indefinitely! :rocket:
+or by making a [**bitcoin donation**](https://mrz1818.com/?tab=tips&utm_source=github&utm_medium=sponsor-link&utm_campaign=codepipeline-to-github&utm_term=codepipeline-to-github&utm_content=codepipeline-to-github) to ensure this journey continues indefinitely! :rocket:
 
 ### Credits
 This application would not be possible without the work provided in these repositories: 
