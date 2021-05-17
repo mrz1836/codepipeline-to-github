@@ -332,6 +332,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - lambda:Create*
+                  - lambda:Describe*
                   - lambda:Get*
                   - lambda:Invoke*
                   - lambda:List*
