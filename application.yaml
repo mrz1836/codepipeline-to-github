@@ -333,6 +333,7 @@ Resources:
                 Action:
                   - lambda:Create*
                   - lambda:Describe*
+                  - events:Describe*
                   - lambda:Get*
                   - lambda:Invoke*
                   - lambda:List*
@@ -426,6 +427,8 @@ Resources:
                   - lambda:GetFunctionConfiguration
                   - lambda:InvokeFunction
                   - lambda:ListFunctions
+                  - lambda:Describe*
+                  - events:Describe*
                 Resource:
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}"
                 Effect: Allow
