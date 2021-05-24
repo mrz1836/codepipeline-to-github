@@ -109,6 +109,7 @@ Resources:
       Policies:
         - AWSCodePipelineReadOnlyAccess
         - AWSLambdaBasicExecutionRole
+        - !Ref EventsPolicy
         - KMSDecryptPolicy:
             KeyId: !Ref EncryptionKeyId
       Events:
@@ -442,6 +443,19 @@ Resources:
                 Effect: Allow
                 Resource: "*"
 
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-managedpolicy.html
+  EventsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: ManageEvents
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - events:Describe*
+            Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ApplicationStackName}"
+            
 # More info about Outputs: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html
 Outputs:
   StatusFunction:
