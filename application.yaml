@@ -106,6 +106,7 @@ Resources:
       CodeUri: releases/status/.
       Handler: status
       KmsKeyArn: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${EncryptionKeyId}'
+      PermissionsBoundary: !Ref EventsPolicy
       Policies:
         - AWSCodePipelineReadOnlyAccess
         - AWSLambdaBasicExecutionRole
