@@ -333,7 +333,7 @@ Resources:
                 Action:
                   - events:Describe*
                 Resource:
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}"
+                  - !Sub "*"
               - Effect: Allow
                 Action:
                   - lambda:Create*
@@ -432,7 +432,7 @@ Resources:
                 Action:
                   - events:Describe*
                 Resource:
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}"
+                  - !Sub "*"
               - Action:
                   - lambda:GetFunctionConfiguration
                   - lambda:InvokeFunction
