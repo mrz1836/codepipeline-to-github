@@ -330,10 +330,10 @@ Resources:
                   - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ApplicationStackName}*"
                   - !Sub "arn:aws:cloudformation:${AWS::Region}:aws:transform/Serverless*"
               - Effect: Allow
-                  Action:
-                    - events:Describe*
-                  Resource:
-                    - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}"
+                Action:
+                  - events:Describe*
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}"
               - Effect: Allow
                 Action:
                   - lambda:Create*
@@ -429,10 +429,10 @@ Resources:
                   - !Sub "arn:aws:s3:::${ApplicationBucket}/*"
                 Effect: Allow
               - Effect: Allow
-                  Action:
-                    - events:Describe*
-                  Resource:
-                    - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}"
+                Action:
+                  - events:Describe*
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}"
               - Action:
                   - lambda:GetFunctionConfiguration
                   - lambda:InvokeFunction
