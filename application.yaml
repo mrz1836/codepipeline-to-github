@@ -193,8 +193,9 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/standard:5.0
-        #Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        # Image: aws/codebuild/standard:5.0
+        # Using a custom AWS image for supporting Go 1.16
+        Image: shogo82148/codebuild-golang:1.16-standard-5.0
         EnvironmentVariables:
           - Name: APPLICATION_NAME
             Type: PLAINTEXT
@@ -227,6 +228,7 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: "buildspec.yml"
       TimeoutInMinutes: 15
+      QueuedTimeoutInMinutes: 60
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codepipeline-webhook.html
   GithubWebhook:
