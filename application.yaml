@@ -193,9 +193,9 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        # Image: aws/codebuild/standard:5.0
+        Image: aws/codebuild/standard:5.0
         # Using a custom AWS image for supporting Go 1.16
-        Image: shogo82148/codebuild-golang:1.16-standard-5.0
+        # Image: shogo82148/codebuild-golang:1.16-standard-5.0
         EnvironmentVariables:
           - Name: APPLICATION_NAME
             Type: PLAINTEXT
