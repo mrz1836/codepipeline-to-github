@@ -108,7 +108,7 @@ func ProcessEvent(ev event) error {
 	owner := parts[1]
 	repo := parts[2]
 
-	// Setup the links
+	// Set up the links
 	deepLink := fmt.Sprintf(
 		"https://%s.console.aws.amazon.com/codesuite/codepipeline/pipelines/%s/executions/%s",
 		config.AWSRegion, ev.Detail.Pipeline, ev.Detail.ExecutionID)
