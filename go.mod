@@ -4,6 +4,6 @@ go 1.15
 
 require (
 	github.com/aws/aws-lambda-go v1.26.0
-	github.com/aws/aws-sdk-go v1.40.45
+	github.com/aws/aws-sdk-go v1.40.49
 	github.com/kelseyhightower/envconfig v1.4.0
 )
