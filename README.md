@@ -252,6 +252,7 @@ godocs                     Sync the latest tag with GoDocs
 help                       Show this help message
 install                    Install the application
 install-go                 Install the application (Using Native Go)
+install-releaser           Install the GoReleaser application
 invalidate-cache           Invalidates a cloudfront cache based on path
 lambda                     Build a compiled version to deploy to Lambda
 lint                       Run the golangci-lint application (install if not found)
@@ -306,8 +307,8 @@ Read more about this Go project's [code standards](.github/CODE_STANDARDS.md).
 ## Maintainers
 
 | [<img src="https://github.com/mrz1836.png" height="50" alt="MrZ" />](https://github.com/mrz1836) |
-|:---:|
-| [MrZ](https://github.com/mrz1836) |
+|:------------------------------------------------------------------------------------------------:|
+|                                [MrZ](https://github.com/mrz1836)                                 |
 
 <br/>
 
