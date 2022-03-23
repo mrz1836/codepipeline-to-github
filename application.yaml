@@ -367,6 +367,11 @@ Resources:
                   - iam:Pass*
                 Resource:
                   - "*"
+              - Effect: Allow
+                Action:
+                  - codepipeline:Get*
+                Resource:
+                  - "*"
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
   CodePipelineRole:
