@@ -75,20 +75,24 @@ ifndef LOCAL_ENV_FILE
 	override LOCAL_ENV_FILE=local-env.json
 endif
 
-.PHONY: clean lambda deploy
-
+.PHONY: build
 build: ## Build the lambda function as a compiled application
 	@go build -o $(RELEASES_DIR)/$(PACKAGE_NAME)/$(BINARY_NAME) .
 
+.PHONY: clean
 clean: ## Remove previous builds, test cache, and packaged releases
 	@go clean -cache -testcache -i -r
 	@if [ -d $(DISTRIBUTIONS_DIR) ]; then rm -r $(DISTRIBUTIONS_DIR); fi
 	@if [ -d $(RELEASES_DIR) ]; then rm -r $(RELEASES_DIR); fi
 	@rm -rf $(TEMPLATE_PACKAGED)
 
+.PHONY: deploy
 deploy: ## Build, prepare and deploy
+	@$(info Building...)
 	@$(MAKE) lambda
+	@$(info Packaging...)
 	@$(MAKE) package
+	@$(info Deploying...)
 	@SAM_CLI_TELEMETRY=0 sam deploy \
         --template-file $(TEMPLATE_PACKAGED) \
         --stack-name $(APPLICATION_STACK_NAME)  \
@@ -109,13 +113,16 @@ deploy: ## Build, prepare and deploy
         --no-fail-on-empty-changeset \
         --no-confirm-changeset
 
+.PHONY: lambda
 lambda: ## Build a compiled version to deploy to Lambda
 	@$(MAKE) test
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
+.PHONY: release
 release:: ## Runs common.release and then runs godocs
 	@$(MAKE) godocs
 
+.PHONY: run
 run: ## Fires the lambda function (run event=started)
 	@$(MAKE) lambda
 	@if [ "$(event)" = "" ]; then echo $(eval event += started); fi
@@ -125,10 +132,13 @@ run: ## Fires the lambda function (run event=started)
 		--template $(TEMPLATE_RAW) \
 		--env-vars $(LOCAL_ENV_FILE)
 
+.PHONY: save-secrets
 save-secrets: ## Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
 	@# Example: make save-secrets github_token=12345... kms_key_id=b329... stage=<stage>
-	@test $(github_token)
-	@test $(kms_key_id)
+	@$(info Testing variables...)
+	@[ "${github_token}" ] || ( echo ">> github_token is not set"; exit 1 )
+	@[ "${kms_key_id}" ] || ( echo ">> kms_key_id is not set"; exit 1 )
+	@$(info Encrypting...)
 	@$(eval github_token_encrypted := $(shell $(MAKE) encrypt kms_key_id=$(kms_key_id) encrypt_value="$(github_token)"))
 	@$(eval secret_value := $(shell echo '{' \
 		'\"github_personal_token\":\"$(github_token)\"' \
