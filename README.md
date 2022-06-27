@@ -7,7 +7,7 @@
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github?v=3)](https://golang.org/)
 <br>
-[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://gh.mergify.io/badges/mrz1836/codepipeline-to-github&style=flat&v=3)](https://mergify.io)
+[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/mrz1836/codepipeline-to-github&style=flat&v=3)](https://mergify.io)
 [![Sponsor](https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat&v=3)](https://github.com/sponsors/mrz1836)
 [![Donate](https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat)](https://mrz1818.com/?tab=tips&utm_source=github&utm_medium=sponsor-link&utm_campaign=codepipeline-to-github&utm_term=codepipeline-to-github&utm_content=codepipeline-to-github)
 
@@ -114,9 +114,9 @@ This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-m
 Add or update your Github personal access token
 ```shell script
 make save-secrets \
-      github_token="YOUR_GITHUB_TOKEN" \
-      kms_key_id="YOUR_KMS_KEY_ID" \
-      stage="<stage>"
+    github_token="YOUR_GITHUB_TOKEN" \
+    kms_key_id="YOUR_KMS_KEY_ID" \
+    stage="<stage>";
 ```
 </details>
 
@@ -234,6 +234,10 @@ make help
 List of all current commands:
 ```text
 aws-param-certificate      Returns the ssm location for the domain ssl certificate id
+aws-param-dockerhub        Returns the ssm location for the DockerHub ARN
+aws-param-vpc-id           Returns the ssm location for the vpc id
+aws-param-vpc-private      Returns the ssm location for the vpc private subnets
+aws-param-vpc-public       Returns the ssm location for the vpc public subnets
 aws-param-zone             Returns the ssm location for the host zone id
 build                      Build the lambda function as a compiled application
 clean                      Remove previous builds, test cache, and packaged releases
@@ -264,9 +268,12 @@ release-test               Full production test release (everything except deplo
 replace-version            Replaces the version in HTML/JS (pre-deploy)
 run                        Fires the lambda function (run event=started)
 save-domain-info           Saves the zone id and the ssl id for use by CloudFormation
+save-host-info             Saves the host information for a given domain
 save-param                 Saves a plain-text string parameter in SSM
 save-param-encrypted       Saves an encrypted string value as a parameter in SSM
+save-param-list            Saves a list of strings (entry1,entry2,entry3) as a parameter in SSM
 save-secrets               Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
+save-vpc-info              Saves the VPC id and the subnet IDs for use by CloudFormation
 tag                        Generate a new tag and push (tag version=0.0.0)
 tag-remove                 Remove a tag if found (tag-remove version=0.0.0)
 tag-update                 Update an existing tag to current commit (tag-update version=0.0.0)
@@ -290,7 +297,7 @@ vet                        Run the Go vet application
 
 ## Examples & Tests
 All unit tests run via [Github Actions](https://github.com/mrz1836/codepipeline-to-github/actions) and
-uses [Go version 1.15.x](https://golang.org/doc/go1.15). View the [configuration file](.github/workflows/run-tests.yml).
+uses [Go version 1.16.x](https://golang.org/doc/go1.16). View the [configuration file](.github/workflows/run-tests.yml).
 
 Run all tests (including integration tests)
 ```shell script
