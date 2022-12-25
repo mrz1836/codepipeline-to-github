@@ -3,7 +3,7 @@
 
 [![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?logo=github&style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
 [![codecov](https://codecov.io/gh/mrz1836/codepipeline-to-github/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/mrz1836/codepipeline-to-github)
-[![Build Status](https://img.shields.io/github/workflow/status/mrz1836/codepipeline-to-github/run-go-tests?logo=github&v=3)](https://github.com/mrz1836/codepipeline-to-github/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mrz1836/codepipeline-to-github/run-tests.yml?branch=master&logo=github&v=3)](https://github.com/mrz1836/codepipeline-to-github/actions)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/codepipeline-to-github?style=flat&v=3)](https://goreportcard.com/report/github.com/mrz1836/codepipeline-to-github)
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/codepipeline-to-github?v=3)](https://golang.org/)
 <br>
