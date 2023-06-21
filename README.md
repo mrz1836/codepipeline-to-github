@@ -1,4 +1,4 @@
-# CodePipeline → Lambda → Github
+# CodePipeline → Lambda → GitHub
 > Update a GitHub commit status via CodePipeline events
 
 [![Release](https://img.shields.io/github/release-pre/mrz1836/codepipeline-to-github.svg?logo=github&style=flat&v=3)](https://github.com/mrz1836/codepipeline-to-github/releases)
@@ -27,8 +27,8 @@
 <br/>
 
 ## TL;DR
-[AWS CodePipeline](https://aws.amazon.com/codepipeline/) lacks an easy way to update Github commit statuses _(at this time)_. Launch this serverless application and 
-immediately start updating commits as pipeline events occur. All you need is a [Github personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and some [AWS credentials](#prerequisites).
+[AWS CodePipeline](https://aws.amazon.com/codepipeline/) lacks an easy way to update GitHub commit statuses _(at this time)_. Launch this serverless application and 
+immediately start updating commits as pipeline events occur. All you need is a [GitHub personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and some [AWS credentials](#prerequisites).
 
 <br/>
 
@@ -61,7 +61,7 @@ cd $GOPATH/src/github.com/mrz1836/codepipeline-to-github
 }
 ```
 
-**2)** Modify the [local-env.json](local-env.json) file with your Github Personal Access Token
+**2)** Modify the [local-env.json](local-env.json) file with your GitHub Personal Access Token
 ```json
 "StatusFunction": {
   "GITHUB_ACCESS_TOKEN": "your-token-goes-here"
@@ -111,7 +111,7 @@ This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-m
 - `github_token` is a personal token with access to make a webhook
 - `kms_key_id` is from the previous step (Create Environment Encryption Keys)
 
-Add or update your Github personal access token
+Add or update your GitHub personal access token
 ```shell script
 make save-secrets \
     github_token="YOUR_GITHUB_TOKEN" \
@@ -130,15 +130,15 @@ This will create a new [AWS CloudFormation](https://aws.amazon.com/cloudformatio
 - (1) [Lambda](https://aws.amazon.com/lambda/) Function (Golang Runtime)
 - (1) [CloudWatch Event Rule](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/Create-CloudWatch-Events-Rule.html) to subscribe to Pipeline events
 - (1) [CloudWatch LogGroup](https://aws.amazon.com/cloudwatch/) for the Lambda function output
-- (1) [CodePipeline](https://aws.amazon.com/codepipeline/) with multiple stages to deploy the application from Github
-- (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive Github notifications from a specific `branch:name`
+- (1) [CodePipeline](https://aws.amazon.com/codepipeline/) with multiple stages to deploy the application from GitHub
+- (1) [CodePipeline Webhook](https://aws.amazon.com/codepipeline/) to receive GitHub notifications from a specific `branch:name`
 - (1) [CodeBuild Project](https://docs.aws.amazon.com/codebuild/latest/userguide/create-project.html) to test, build and deploy the app
 - (2) [Service Roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html) for working with CodeBuild and CodePipeline
 
 **NOTE:** Requires an existing S3 bucket for artifacts and sam-cli deployments (located in the [Makefile](Makefile))
 
 One command will build, test, package and deploy the application to AWS using the default `production` stage and using default tags. 
-After initial deployment, updating the function is as simple as committing to Github.
+After initial deployment, updating the function is as simple as committing to GitHub.
 ```shell script
 make deploy
 ```
@@ -200,10 +200,10 @@ View all the logs in [AWS CloudWatch](https://console.aws.amazon.com/cloudwatch/
 The [`status`](status.go) handler does the following:
 ```text
 - Processes incoming CloudWatch events from CodePipeline
-- Decrypts environment variables (Github Token)
+- Decrypts environment variables (GitHub Token)
 - Gets the latest information from CodePipeline via an ExecutionID
-- Determines the Github status based on the Execution status
-- Initiates a http/post request to Github to update the commit status
+- Determines the GitHub status based on the Execution status
+- Initiates a http/post request to GitHub to update the commit status
 ``` 
 
 Run the status function with different pipeline [events](events)
@@ -215,7 +215,7 @@ make run event="failed"
 <summary><strong><code>Release Deployment</code></strong></summary>
 <br/>
 
-[goreleaser](https://github.com/goreleaser/goreleaser) for easy binary or library deployment to Github and can be installed via: `brew install goreleaser`.
+[goreleaser](https://github.com/goreleaser/goreleaser) for easy binary or library deployment to GitHub and can be installed via: `brew install goreleaser`.
 
 The [.goreleaser.yml](.goreleaser.yml) file is used to configure [goreleaser](https://github.com/goreleaser/goreleaser).
 
@@ -261,7 +261,7 @@ invalidate-cache           Invalidates a cloudfront cache based on path
 lambda                     Build a compiled version to deploy to Lambda
 lint                       Run the golangci-lint application (install if not found)
 package                    Process the CF template and prepare for deployment
-release                    Full production release (creates release in Github)
+release                    Full production release (creates release in GitHub)
 release                    Runs common.release and then runs godocs
 release-snap               Test the full release (build binaries)
 release-test               Full production test release (everything except deploy)
@@ -272,7 +272,7 @@ save-host-info             Saves the host information for a given domain
 save-param                 Saves a plain-text string parameter in SSM
 save-param-encrypted       Saves an encrypted string value as a parameter in SSM
 save-param-list            Saves a list of strings (entry1,entry2,entry3) as a parameter in SSM
-save-secrets               Helper for saving Github token(s) to Secrets Manager (extendable for more secrets)
+save-secrets               Helper for saving GitHub token(s) to Secrets Manager (extendable for more secrets)
 save-vpc-info              Saves the VPC id and the subnet IDs for use by CloudFormation
 tag                        Generate a new tag and push (tag version=0.0.0)
 tag-remove                 Remove a tag if found (tag-remove version=0.0.0)
@@ -296,8 +296,8 @@ vet                        Run the Go vet application
 <br/>
 
 ## Examples & Tests
-All unit tests run via [Github Actions](https://github.com/mrz1836/codepipeline-to-github/actions) and
-uses [Go version 1.16.x](https://golang.org/doc/go1.16). View the [configuration file](.github/workflows/run-tests.yml).
+All unit tests run via [GitHub Actions](https://github.com/mrz1836/codepipeline-to-github/actions) and
+uses [Go version 1.18.x](https://golang.org/doc/go1.18). View the [configuration file](.github/workflows/run-tests.yml).
 
 Run all tests (including integration tests)
 ```shell script
@@ -334,7 +334,7 @@ or by making a [**bitcoin donation**](https://mrz1818.com/?tab=tips&utm_source=g
 ### Credits
 This application would not be possible without the work provided in these repositories: 
 - [CPLiakas's SAM Golang Example](https://github.com/cpliakas/aws-sam-golang-example) 
-- [InfoPark's Github Status](https://github.com/infopark/lambda-codepipeline-github-status)
+- [InfoPark's GitHub Status](https://github.com/infopark/lambda-codepipeline-github-status)
 - [Jenseickmeyer's Commit Status Bot](https://github.com/jenseickmeyer/github-commit-status-bot) 
 - [Rowanu's SAM Golang Starter](https://github.com/rowanu/sam-golang-starter) 
 
