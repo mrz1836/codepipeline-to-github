@@ -1,10 +1,10 @@
 module github.com/mrz1836/codepipeline-to-github
 
-go 1.18
+go 1.19
 
 require (
-	github.com/aws/aws-lambda-go v1.43.0
-	github.com/aws/aws-sdk-go v1.49.16
+	github.com/aws/aws-lambda-go v1.44.0
+	github.com/aws/aws-sdk-go v1.49.18
 	github.com/kelseyhightower/envconfig v1.4.0
 )
 

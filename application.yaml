@@ -199,7 +199,7 @@ Resources:
         #      RegistryCredential:
         #        Credential: !Sub "${ApplicationDockerHubArn}"
         #        CredentialProvider: "SECRETS_MANAGER"
-        # Image: shogo82148/codebuild-golang:1.18-standard-5.0
+        # Image: shogo82148/codebuild-golang:1.19-standard-5.0
         EnvironmentVariables:
           - Name: APPLICATION_NAME
             Type: PLAINTEXT
