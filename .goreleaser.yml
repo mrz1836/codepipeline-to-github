@@ -9,13 +9,6 @@ before:
     - make test
 snapshot:
   name_template: "{{ .Tag }}"
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^.github:'
-      - '^.vscode:'
-      - '^test:'
 
 # ---------------------------
 # Publishers
@@ -27,8 +20,14 @@ changelog:
 # ---------------------------
 # Builder
 # ---------------------------
-build:
-  skip: true
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    skip: true
 
 # ---------------------------
 # Github Release
@@ -37,6 +36,13 @@ release:
   prerelease: true
   name_template: "Release v{{.Version}}"
 
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^.github:'
+      - '^.vscode:'
+      - '^test:'
 # ---------------------------
 # Announce
 # ---------------------------
