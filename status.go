@@ -12,7 +12,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -47,7 +48,7 @@ type detail struct {
 	Pipeline    string `json:"pipeline"`
 }
 
-// payload is the data payload to send Github
+// payload is the data payload to send GitHub
 type payload struct {
 	Context     string `json:"context"`
 	Description string `json:"description"`
@@ -73,7 +74,7 @@ func ProcessEvent(ev event) error {
 
 	// Check for required parameters
 	if ev.Detail != nil {
-		fmt.Printf("Incoming Event Details: %+v\n", ev.Detail)
+		log.Printf("Incoming Event Details: %+v\n", ev.Detail)
 	} else {
 		return errors.New("missing param event.detail")
 	}
@@ -114,7 +115,7 @@ func ProcessEvent(ev event) error {
 		config.AWSRegion, ev.Detail.Pipeline, ev.Detail.ExecutionID)
 	githubURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/statuses/%s", owner, repo, commit)
 
-	// Create the Github payload
+	// Create the GitHub payload
 	var b bytes.Buffer
 	if err = json.NewEncoder(&b).Encode(payload{
 		Context:   "continuous-integration/codepipeline",
@@ -146,7 +147,7 @@ func ProcessEvent(ev event) error {
 
 	// Check for success
 	if response.StatusCode != http.StatusCreated {
-		resBody, _ := ioutil.ReadAll(response.Body)
+		resBody, _ := io.ReadAll(response.Body)
 		return fmt.Errorf("unexpected response from GitHub, code: %d body: %s", response.StatusCode, string(resBody))
 	}
 
@@ -171,7 +172,7 @@ func loadConfiguration(kmsSvc kmsiface.KMSAPI) (err error) {
 	return
 }
 
-// getCommit will get the Github commit and revision url from an execution
+// getCommit will get the GitHub commit and revision url from an execution
 func getCommit(pipelineName, executionID string, pipeline codepipelineiface.CodePipelineAPI) (commit, status string, revisionURL *url.URL, err error) {
 
 	// Get the execution details
@@ -185,7 +186,7 @@ func getCommit(pipelineName, executionID string, pipeline codepipelineiface.Code
 
 	// No artifact to work with (this occurs if a "Release Change" event is fired)
 	if sourceArtifact == nil {
-		fmt.Printf("no %s found in execution: %s for pipeline: %s",
+		log.Printf("no %s found in execution: %s for pipeline: %s",
 			sourceArtifactName, *executionOutput.PipelineExecution.PipelineExecutionId, *executionOutput.PipelineExecution.PipelineName)
 		return
 	}
