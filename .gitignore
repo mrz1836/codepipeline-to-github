@@ -29,3 +29,4 @@ packaged.yaml
 # Generated binaries
 dist
 releases
+dist/
