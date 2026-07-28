@@ -100,7 +100,7 @@ Create a `KMS Key` per `<stage>` for your application(s) to encrypt environment 
 make create-env-key stage="<stage>"
 ```
 
-This will also store the `kms_key_id` in  [SSM](https://aws.amazon.com/systems-manager/features/) located at: `/<application>/<stage>/kms_key_id` 
+This will also store the `kms_key_id` in [SSM](https://aws.amazon.com/systems-manager/features/) located at: `/<application>/<stage>/kms_key_id` 
 
 </details>
 
