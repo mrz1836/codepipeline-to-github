@@ -118,10 +118,6 @@ lambda: ## Build a compiled version to deploy to Lambda
 	@$(MAKE) test
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
-.PHONY: release
-release:: ## Runs common.release and then runs godocs
-	@$(MAKE) godocs
-
 .PHONY: run
 run: ## Fires the lambda function (run event=started)
 	@$(MAKE) lambda
